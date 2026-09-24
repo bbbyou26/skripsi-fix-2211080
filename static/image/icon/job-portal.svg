@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW X7 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="12mm" height="12mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1200 1200"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:black;stroke-width:10}
+    .str1 {stroke:#C9C7C7;stroke-width:10}
+    .fil1 {fill:none}
+    .fil2 {fill:#2196F3}
+    .fil3 {fill:#4D1F1F}
+    .fil0 {fill:#EBE8E8}
+    .fil5 {fill:#FFCC00}
+    .fil4 {fill:#FFCC00}
+   ]]>
+  </style>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_2097028504800">
+   <path class="fil0 str0" d="M263 631c84,92 203,144 327,144 125,0 244,-52 328,-144 -67,-118 -192,-191 -328,-191 -135,0 -260,73 -327,191z"/>
+   <path class="fil1 str0" d="M452 466c-78,116 -70,214 25,294"/>
+   <path class="fil1 str0" d="M736 469c63,95 63,189 0,283"/>
+   <path class="fil2" d="M587 775c50,0 99,-9 145,-25 61,-92 60,-185 -1,-277 -45,-19 -94,-29 -144,-29 -47,0 -93,9 -135,26 -78,114 -70,211 24,290 36,10 73,15 111,15z"/>
+   <ellipse class="fil3 str1" cx="588" cy="610" rx="117" ry="108"/>
+   <path class="fil4" d="M603 575l6 22 2 0 22 -11 16 17 -10 17 2 4 19 5 1 23 -17 5 37 0c3,-29 -1,-52 -14,-71 -14,-18 -36,-31 -67,-38 -1,0 -2,1 -2,1 -4,2 -9,1 -12,0 -34,9 -57,24 -71,44 -11,17 -15,39 -13,64l38 0 -19 -5 -1 -23 23 -7 0 -1 -10 -18 16 -17 21 12 4 -1 6 -22 23 0z"/>
+   <path class="fil4" d="M600 551c31,7 53,20 67,38 -1,-6 -1,-11 -2,-17 -3,-14 -7,-25 -13,-33 -6,-7 -14,-11 -19,-13 -6,-1 -9,-1 -15,5 -4,6 -11,15 -18,20z"/>
+   <path class="fil5" d="M515 596c14,-20 37,-35 71,-44 -4,-2 -7,-5 -10,-8 -5,-6 -8,-13 -13,-15 -5,-3 -13,-1 -21,4 -8,5 -16,14 -21,30 -2,9 -4,20 -6,33z"/>
+   <path class="fil4" d="M548 489c0,23 20,42 44,42 25,0 44,-19 44,-42 0,-23 -19,-42 -44,-42 -24,0 -44,19 -44,42z"/>
+  </g>
+ </g>
+</svg>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW X7 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="12mm" height="12mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1200 1200"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#244A6A;stroke-width:20}
+    .fil1 {fill:none}
+    .fil0 {fill:#244A6A}
+   ]]>
+  </style>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_2093889233744">
+   <rect class="fil0" transform="matrix(0.224909 0.00972142 -0.00972142 0.224909 233.787 683.24)" width="250" height="383" rx="400" ry="400"/>
+   <rect class="fil0" transform="matrix(0.224909 0.00972142 -0.0119822 0.277212 293.129 665.726)" width="250" height="383" rx="400" ry="400"/>
+   <rect class="fil0" transform="matrix(0.224909 0.00972142 -0.0119822 0.277212 353.855 668.351)" width="250" height="383" rx="400" ry="400"/>
+   <rect class="fil0" transform="matrix(0.224909 0.00972142 -0.0119822 0.277212 412.331 670.878)" width="250" height="383" rx="400" ry="400"/>
+  </g>
+  <g id="_2093889232784">
+   <path class="fil0" d="M983 425l-26 144c12,10 19,24 22,39l27 -150c2,-15 -8,-30 -23,-33z"/>
+   <path class="fil0" d="M976 643c7,-37 -15,-72 -51,-83 1,2 1,4 2,6 4,22 4,43 0,64 0,0 0,0 0,0 -4,27 -15,50 -29,71 0,0 0,0 0,0 37,4 71,-21 78,-58z"/>
+   <path class="fil0" d="M718 769c94,16 183,-46 200,-140 16,-93 -47,-183 -140,-199l-59 -11c-93,-16 -183,47 -199,140 -17,93 46,183 140,200l58 10zm70 -82l-170 -30c-47,-8 -79,-54 -71,-101 9,-47 54,-79 101,-70l170 29c47,9 79,54 70,101 -8,47 -53,79 -100,71z"/>
+   <path class="fil0" d="M676 608l9 -51c3,-16 -8,-31 -24,-34 -16,-3 -31,8 -34,24l-9 50c-3,16 7,32 23,35 16,3 32,-8 35,-24z"/>
+   <path class="fil0" d="M805 633l9 -50c3,-16 -7,-32 -23,-35 -16,-2 -32,8 -35,24l-9 51c-3,16 8,31 24,34 16,3 31,-8 34,-24z"/>
+   <path class="fil0" d="M527 349l-26 143c-14,6 -26,16 -34,29l27 -149c2,-15 17,-26 33,-23z"/>
+   <path class="fil0" d="M459 556c6,-37 38,-63 76,-61 -2,2 -3,4 -4,6 -11,18 -19,38 -22,59 0,0 0,1 0,1 -5,26 -3,52 3,76 0,0 0,0 0,0 -36,-9 -59,-44 -53,-81z"/>
+   <path class="fil0" d="M772 800l-51 -9c-10,-2 -21,7 -23,20 -2,13 4,25 14,26l52 10c10,1 21,-8 23,-21 2,-13 -4,-25 -15,-26z"/>
+   <path class="fil1 str0" d="M783 820c38,5 76,-7 104,-33 29,-25 46,-61 46,-100"/>
+  </g>
+ </g>
+</svg>

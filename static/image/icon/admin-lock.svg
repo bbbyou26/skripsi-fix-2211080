@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Creator: CorelDRAW X7 -->
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="12mm" height="12mm" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1200 1200"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:#206F8A;stroke-width:68;stroke-linecap:round;stroke-linejoin:round}
+    .fil0 {fill:#C0D4DB}
+    .fil1 {fill:#38A0C4}
+    .fil2 {fill:#206F8A}
+    .fil3 {fill:white}
+    .fil4 {fill:#189DC9}
+    .filNone {fill:none}
+   ]]>
+  </style>
+ </defs>
+ <g id="Layer_x0020_1">
+  <metadata id="CorelCorpID_0Corel-Layer"/>
+  <g id="_lock_group">
+   <!-- Base Soft Shadow -->
+   <path class="fil0" d="M260 1010c-85,-45 -95,-130 30,-175 125,-45 450,-50 620,-15 140,30 150,110 50,155 -110,48 -310,75 -470,75 -105,0 -185,-18 -230,-40z"/>
+   
+   <!-- Shackle / Gagang Gembok (Back & Arch) -->
+   <path class="filNone str0" d="M440 540v-175c0,-130 320,-130 320,0v175"/>
+   
+   <!-- Lock Body (Main Rounded Polygon / Shield-like Box) -->
+   <path class="fil1" d="M330 500h540c45,0 80,35 80,80v290c0,55 -40,95 -95,95h-510c-55,0 -95,-40 -95,-95v-290c0,-45 35,-80 80,-80z"/>
+   
+   <!-- Lock Body Left 3D Gradient / Shading -->
+   <path class="fil4" d="M330 500h270v465h-240c-55,0 -95,-40 -95,-95v-290c0,-45 35,-80 65,-80z"/>
+   
+   <!-- Top Gloss Highlight -->
+   <path class="fil3" style="opacity:0.25" d="M360 525h480c25,0 45,15 45,35v25c0,-20 -20,-35 -45,-35h-480c-25,0 -45,15 -45,35v-25c0,-20 20,-35 45,-35z"/>
+   
+   <!-- Keyhole Plate -->
+   <ellipse class="fil2" cx="600" cy="710" rx="90" ry="90"/>
+   <path class="fil3" d="M600 660c-22,0 -40,18 -40,40 0,14 7,26 18,33l-16 67h76l-16,-67c11,-7 18,-19 18,-33 0,-22 -18,-40 -40,-40z"/>
+  </g>
+ </g>
+</svg>
