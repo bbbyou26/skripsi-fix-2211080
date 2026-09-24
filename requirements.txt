@@ -4,7 +4,7 @@ neo4j
 pymongo
 Jinja2
 Werkzeug
-pinecone-client
+pinecone
 datasets
 ragas
 langchain_openai
