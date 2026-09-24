@@ -1,0 +1,350 @@
+/* ORIGINAL DESIGN REVISION - USIAHA (tgg6.html) */
+.edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 10000;
+  display: none;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: inherit;
+}
+
+.edit-overlay.active {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  /* CENTERED */
+}
+
+.edit-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 2px solid #e0e0e0;
+  padding: 16px;
+  width: 360px;
+  max-height: 85vh;
+  /* MAX HEIGHT */
+  overflow-y: auto;
+  /* SCROLLABLE */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  font-family: system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+/* Minimalist Scrollbar */
+.edit-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.edit-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.edit-card::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 10px;
+}
+
+.edit-card::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  position: sticky;
+  /* Keep title visible while scrolling */
+  top: 0;
+  background: white;
+  z-index: 10;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f2f7f9;
+}
+
+.edit-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c5d6b;
+}
+
+.close-edit {
+  font-size: 16px;
+  cursor: pointer;
+  color: #2c5d6b;
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.close-edit:hover {
+  background: #ffebe9;
+  color: #ff6b6b;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2c5d6b;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c5d6b;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f2f7f9;
+}
+
+.input,
+textarea,
+select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  padding: 9px 12px;
+  font-size: 13px;
+  background: #f2f7f9;
+  outline: none;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: none;
+}
+
+.input:focus,
+textarea:focus,
+select:focus {
+  border-color: #38a0c4;
+  box-shadow: 0 0 0 3px rgba(56, 160, 196, 0.1);
+}
+
+.image-upload-wrapper,
+.upload-box {
+  position: relative;
+  width: 100%;
+  background: #dfecf1;
+  color: #38a0c4;
+  border: 1.5px dashed #38a0c4;
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+.image-upload-wrapper:hover,
+.upload-box:hover {
+  background: #38a0c4;
+  color: white;
+}
+
+.image-upload-wrapper:hover .btn-image-upload {
+  color: white;
+}
+
+.image-upload-wrapper:hover img,
+.upload-box:hover img {
+  filter: brightness(0) invert(1);
+}
+
+.image-upload-wrapper input[type="file"],
+.upload-box input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.btn-image-upload {
+  width: 100%;
+  background: transparent;
+  color: inherit;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: none;
+}
+
+.preview {
+  margin-top: 8px;
+  display: none;
+}
+
+.preview img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f2f7f9;
+}
+
+.btn-save {
+  border: none;
+  background: #38a0c4;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 18px;
+  font-size: 12px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.btn-save:hover {
+  background: #2a8cae;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Notes Checklist & Timeframe Styles */
+.notes-checklist {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.notes-check-card {
+  flex: 1;
+  min-width: 0; /* Prevents flex children from overflowing container */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.notes-check-card:hover {
+  border-color: #38a0c4;
+  background: rgba(56, 160, 196, 0.05);
+}
+
+.notes-check-card.active {
+  border-color: #38a0c4;
+  background: transparent;
+  box-shadow: 0 0 0 1px #38a0c4;
+}
+
+.notes-check-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.notes-check-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2c5d6b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeframe-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timeframe-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeframe-sublabel {
+  font-size: 11px;
+  color: #2c5d6b;
+  font-weight: 600;
+  min-width: 85px;
+}
+
+.date-input {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.notes-checklist.cta-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.cta-checklist .notes-check-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  gap: 10px;
+}
+
+.cta-checklist .notes-check-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.cta-checklist .notes-check-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c5d6b;
+  white-space: nowrap;
+}
