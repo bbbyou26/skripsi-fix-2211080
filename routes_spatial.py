@@ -94,7 +94,7 @@ def spatial_chat():
             RETURN a.id AS id, a.name AS name, a.marker_type AS marker_type, a.raw_data AS raw_data
             """
             try:
-                with driver.session(database="neo4j") as neo_session:
+                with driver.session() as neo_session:
                     records = neo_session.run(query_polys, ids=poly_ids)
                     for rec in records:
                         raw = {}
@@ -170,7 +170,7 @@ def spatial_chat():
                            collect(DISTINCT {posisi: s.posisi, gaji: s.gaji_estimasi}) AS sdm_list
                     """
                     try:
-                        with driver.session(database="neo4j") as neo_session:
+                        with driver.session() as neo_session:
                             for rec in neo_session.run(query_details, ids=actor_ids):
                                 raw = {}
                                 if rec["raw_data"]:
@@ -311,7 +311,7 @@ def spatial_chat():
                     RETURN a.name AS source, type(r) AS rel_type, COALESCE(b.name, b.nama, b.detail) AS target
                     """
                     try:
-                        with driver.session(database="neo4j") as neo_session:
+                        with driver.session() as neo_session:
                             records = neo_session.run(query_relations, ids=actor_ids)
                             relations = []
                             for rec in records:
