@@ -1,0 +1,13 @@
+Flask
+openai
+neo4j
+pymongo
+Jinja2
+Werkzeug
+pinecone-client
+datasets
+ragas
+langchain_openai
+pypdf
+python-docx
+rembg

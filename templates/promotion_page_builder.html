@@ -1,0 +1,2635 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Promotion Page - {{ name }}</title>
+  <!-- Main layout and components stylesheet -->
+  <link rel="stylesheet" href="/static/css/layout.css" />
+  <!-- Dedicated promotion page stylesheets -->
+  <link rel="stylesheet" href="/static/css/builder_base.css" />
+  <link rel="stylesheet" href="/static/css/builder_canvas.css" />
+  <link rel="stylesheet" href="/static/css/builder_drawer.css" />
+  <link rel="stylesheet" href="/static/css/builder_modal.css" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/static/image/icon.ico" />
+  <!-- html2canvas for UI Kit thumbnail capturing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    /* Spinner for loading state */
+    .loader-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #38a0c4;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .modal-overlay {
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .btn-toolbar-tool {
+      transition: all 0.2s ease;
+    }
+
+    .btn-toolbar-tool:hover {
+      filter: brightness(0.9);
+    }
+
+    #aiSuggestionsContent::selection,
+    #aiSuggestionsContent *::selection {
+      background-color: #bddce7 !important;
+      color: #0F4C75 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- App Wrapper (Matches main app sizing) -->
+  <div class="app">
+    <!-- Header -->
+    <header class="builder-header">
+      <div class="header-left">
+        <a href="javascript:history.back()"
+          onclick="if (history.length > 1) { history.back(); return false; } else { window.location.href='/map'; }"
+          class="btn-back" title="Kembali ke Peta">
+          <img src="/static/image/icon/back.svg" alt="Kembali" style="width: 18px; height: 18px;" />
+        </a>
+        <h1 class="app-title">{{ name }}</h1>
+      </div>
+      <div class="header-right">
+        <!-- Toggle Layers System Panel -->
+        <button id="btnToggleLayers" class="btn-icon hidden" onclick="toggleLayersPanel()"
+          title="Tampilkan Sistem Layer">
+          <img src="/static/image/icon/layer.svg" alt="Layer" style="width: 28px; height: 28px;" />
+        </button>
+
+        <!-- Palette Tool & Floating Palette Header Container -->
+        <div style="position: relative; display: inline-flex; align-items: center;">
+          <button id="btnPalette" class="btn-icon hidden {% if not is_admin %}hidden{% endif %}" {% if not is_admin
+            %}style="display: none;" {% endif %} onclick="togglePaletteModal()" title="Konversi Gambar ke Palet Warna">
+            <img src="/static/image/icon/pallete.svg" alt="Palet Warna" style="width: 28px; height: 28px;" />
+          </button>
+
+          <!-- Palette Header Container (Floating Dropdown Under Palette Button) -->
+          <div id="paletteHeaderContainer" class="hidden"
+            style="position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #bddce7; border-radius: 20px; padding: 4px 12px; height: 36px; box-shadow: 0 4px 14px rgba(56,160,196,0.2); z-index: 1000; white-space: nowrap; box-sizing: border-box;">
+            <!-- Swatches -->
+            <div id="paletteHeaderSwatches" style="display: flex; gap: 4px; align-items: center;"></div>
+
+            <!-- Tombol Ubah Gambar di sisi paling kanan -->
+            <button onclick="document.getElementById('paletteHeaderFileInput').click()"
+              title="Ubah Logo/Gambar untuk Palet"
+              style="background: none; border: none; padding: 2px; cursor: pointer; color: #38a0c4; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; opacity: 0.6; transition: all 0.2s;"
+              onmouseover="this.style.opacity='1'; this.style.background='rgba(56,160,196,0.1)'"
+              onmouseout="this.style.opacity='0.6'; this.style.background='none'">
+              <img src="/static/image/icon/images.svg" alt="Ubah Logo/Gambar" style="width: 16px; height: 16px;" />
+            </button>
+            <input type="file" id="paletteHeaderFileInput" accept="image/*" style="display: none;"
+              onchange="handlePaletteImageUpload(event)" />
+          </div>
+        </div>
+
+        <!-- UI Kit Block Templates Button (Between Palette & Undo) -->
+        <button id="btnUIKit" class="btn-icon hidden {% if not is_admin %}hidden{% endif %}" {% if not is_admin
+          %}style="display: none;" {% endif %} onclick="openUIKitModal()" title="UI Kit Block Templates">
+          <img src="/static/image/icon/ui-kit.svg" alt="UI Kit" style="width: 28px; height: 28px;" />
+        </button>
+
+        <!-- Undo Design -->
+        <button id="btnUndo" class="btn-icon hidden" onclick="undo()" title="Undo (Ctrl+Z)" disabled>
+          <img src="/static/image/icon/undo.svg" alt="Undo" style="width: 18px; height: 18px;" />
+        </button>
+
+        <!-- Redo Design -->
+        <button id="btnRedo" class="btn-icon hidden" onclick="redo()" title="Redo (Ctrl+Y)" disabled>
+          <img src="/static/image/icon/redo.svg" alt="Redo" style="width: 18px; height: 18px;" />
+        </button>
+
+        <!-- Toggle Edit/Preview Mode -->
+        <button id="btnToggleMode" class="btn-icon {% if not is_admin %}hidden{% endif %}" {% if not is_admin
+          %}style="display: none;" {% endif %} onclick="toggleEditMode()" title="Ubah Mode (Preview/Edit)">
+          <img id="modeIcon" src="/static/image/icon/edit_builder.svg" alt="Ubah Mode"
+            style="width: 28px; height: 28px;" />
+        </button>
+
+        <!-- Save Design -->
+        <button id="btnSave" class="btn-icon primary-glow hidden" onclick="savePromotionPage()" title="Simpan Desain">
+          <img src="/static/image/icon/save.svg" alt="Simpan Desain" style="width: 28px; height: 28px;" />
+        </button>
+      </div>
+    </header>
+
+    <!-- Horizontal Toolbox Row (Admin Only) -->
+    <div id="toolboxRow" class="toolbox-row hidden">
+      <div class="toolbox-scroll">
+        <div class="toolbox-chip" draggable="true" data-type="title" onclick="createNewElement('title', 10, 8)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-judul.svg" alt="Judul" width="24"
+              height="24"></span> Judul
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="text" onclick="createNewElement('text', 10, 18)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-paragraf.svg" alt="Paragraf" width="24"
+              height="24"></span> Paragraf
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="image" onclick="createNewElement('image', 10, 35)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-gambar.svg" alt="Gambar" width="24"
+              height="24"></span> Gambar
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="shape" onclick="createNewElement('shape', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-box.svg" alt="Box" width="24" height="24"></span>
+          Box
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="container"
+          onclick="createNewElement('container', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-kontainer.svg" alt="Kontainer" width="24"
+              height="24"></span> Kontainer
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="column" onclick="createNewElement('column', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-kolom.svg" alt="Kolom" width="24"
+              height="24"></span> Kolom
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="row" onclick="createNewElement('row', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-baris.svg" alt="Baris" width="24"
+              height="24"></span> Baris
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="carousel" onclick="createNewElement('carousel', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-carousel.svg" alt="Carousel" width="24"
+              height="24"></span> Carousel
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="button" onclick="createNewElement('button', 10, 78)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-tombol.svg" alt="Tombol" width="24"
+              height="24"></span> Tombol
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="media_embed"
+          onclick="createNewElement('media_embed', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-media.svg" alt="Media Embed" width="24"
+              height="24"></span> Media Embed
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="genui_chatbot"
+          onclick="createNewElement('genui_chatbot', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-genui-chatbot.svg" alt="GenUI Chatbot" width="24"
+              height="24"></span> GenUI Chatbot
+        </div>
+        <div class="toolbox-chip" draggable="true" data-type="box-interaktif"
+          onclick="createNewElement('box-interaktif', 10, 32)">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-box-interaktif.svg" alt="Box Interaktif"
+              width="24" height="24"></span>
+          Box Interaktif
+        </div>
+        <div class="toolbox-chip bg-setting-chip" onclick="openBgSettings()">
+          <span class="chip-icon"><img src="/static/image/icon/elemen-bg-halaman.svg" alt="BG Halaman" width="24"
+              height="24"></span> BG Halaman
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Workspace (Canvas Area) -->
+    <div class="canvas-workspace" id="canvasWorkspace">
+      <!-- The Interactive Canvas -->
+      <div class="promotion-canvas" id="canvas">
+        <!-- Dynamic Builder Elements rendered here -->
+        <!-- Snap guide line -->
+        <div id="snapGuideLine" class="snap-guide-line" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Properties Drawer (Admin Only - Slides up when element/bg selected) -->
+    <div id="propertiesDrawer" class="properties-drawer hidden">
+      <div class="drawer-header">
+        <span class="drawer-title" id="drawerTitle">Pengaturan Elemen</span>
+        <button class="drawer-close" onclick="deselectAll()" title="Tutup Pengaturan">
+          <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+        </button>
+      </div>
+      <div class="drawer-content">
+        <!-- BG SETTINGS PANEL -->
+        <div id="bgSettingsPanel" class="prop-panel-sec hidden">
+          <div class="prop-row">
+            <label class="prop-label">Tipe Latar</label>
+            <select id="bgType" onchange="updateBgStyle()" class="prop-select">
+              <option value="color">Latar Warna</option>
+              <option value="image">Latar Gambar</option>
+            </select>
+          </div>
+          <div class="prop-row">
+            <label class="prop-label">Tinggi Halaman (Canvas Height)</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="number" id="canvasHeightInput" class="prop-input" style="flex: 1;" value="800" min="200"
+                max="5000" oninput="changeCanvasHeight(this.value)" placeholder="Tinggi dalam px" />
+              <span style="font-size: 13px; color: #555;">px</span>
+            </div>
+          </div>
+
+          <div id="solidBgGroup" class="prop-row">
+            <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Pilih Warna Latar</label>
+            <div id="pageBgColorTrigger" class="fill-trigger-box"
+              onclick="openFillPopoverForTarget('pageBgFillData', 'Latar Warna Halaman', 'pageBgColorTrigger', 'pageBgColorSwatch', 'pageBgColorHex', 'pageBgColorOpacity', event)"
+              title="Klik untuk ubah warna solid latar halaman">
+              <div id="pageBgColorSwatch" class="fill-trigger-swatch"></div>
+              <span id="pageBgColorHex" class="fill-trigger-hex">#F2F7F9</span>
+              <span id="pageBgColorOpacity" class="fill-trigger-opacity">100%</span>
+            </div>
+          </div>
+
+          <div id="imageBgGroup" class="prop-row hidden"
+            style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+            <div class="prop-row">
+              <label class="prop-label" style="display: flex; align-items: center; gap: 6px;">
+                <img src="/static/image/icon/images.svg" alt="Images"
+                  style="width: 18px; height: 18px; opacity: 0.6;" /> Upload File Gambar Latar
+              </label>
+              <div class="image-upload-wrapper">
+                <button class="btn-image-upload"
+                  style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <img src="/static/image/icon/images.svg" alt="Images"
+                    style="width: 16px; height: 16px; opacity: 0.6;" /> Pilih Gambar
+                </button>
+                <input type="file" id="bgImageUpload" accept="image/*" onchange="uploadBgImage(event)" />
+              </div>
+            </div>
+
+            <div class="prop-row" id="bgCropBtnRow" style="display: none;">
+              <button onclick="openBgCropModal()"
+                style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #38a0c4; background: #f0f9fc; color: #38a0c4; font-weight: bold; cursor: pointer; font-size: 12px;">Resize
+                & Crop Gambar</button>
+            </div>
+            <div class="prop-row">
+              <label class="prop-label">Transparansi Gambar (<span id="bgOpacityVal">100</span>%)</label>
+              <input type="range" id="bgOpacitySlider" min="0" max="100" value="100" class="prop-range"
+                oninput="updateBgImageOpacity(this.value)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- ELEMENT PROPERTIES PANEL -->
+        <div id="elementPropertiesPanel" class="prop-panel-sec hidden">
+          <!-- Text Component Settings -->
+          <div id="groupText" class="prop-group hidden">
+            <!-- Specific Controls for Title Element (Heading Tag) -->
+            <div id="groupTitleSpecific" class="hidden">
+              <div class="prop-row">
+                <label class="prop-label">Tingkat Heading</label>
+                <select id="propHeadingTag" onchange="updateSelectedElementHeadingTag(this.value)" class="prop-select">
+                  <option value="h1">H1 - Judul Utama Halaman</option>
+                  <option value="h2">H2 - Sub Judul (Default)</option>
+                  <option value="h3">H3 - Judul Seksi (Section)</option>
+                  <option value="h4">H4 - Sub Seksi Kecil</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Specific Controls for Paragraph Element (List Mode) -->
+            <div id="groupParagraphSpecific" class="hidden">
+              <div class="prop-row">
+                <label class="prop-label">Format Paragraf / Mode List</label>
+                <select id="propTextListMode" onchange="updateSelectedElementTextListMode(this.value)"
+                  class="prop-select">
+                  <option value="normal">Normal (Paragraf Biasa)</option>
+                  <option value="bullet">&#8226; Bullet Points (Daftar Poin)</option>
+                  <option value="numbered">1. Numbered List (Daftar Angka)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="prop-row">
+              <label class="prop-label">Isi Teks</label>
+              <textarea id="propTextContent" oninput="updateSelectedElementContent()" class="prop-textarea"></textarea>
+            </div>
+            <!-- AI Promo Text Generator Panel -->
+            <div class="ai-assist-panel">
+              <div class="ai-assist-header">
+                <div class="ai-assist-icon-box">
+                  <img src="/static/image/icon/ai-assist.svg" alt="AI Promo Text Generator">
+                </div>
+                <span class="ai-assist-label">Promo Text Generator</span>
+              </div>
+              <button onclick="openAIAssistModal(); return false;" class="ai-assist-btn">
+                <span>Buka Text Generator</span>
+              </button>
+            </div>
+
+            <!-- Text Animation Tool Panel -->
+            <div class="ai-assist-panel" style="margin-top: 10px;">
+              <div class="ai-assist-header">
+                <div class="ai-assist-icon-box">
+                  <img src="/static/image/icon/text-animation.svg" alt="Text Animation Tool">
+                </div>
+                <span class="ai-assist-label">Text Animation Tool</span>
+              </div>
+              <button type="button" onclick="openTextAnimationModal(); return false;" class="ai-assist-btn">
+                <span>Ubah Animasi Teks</span>
+              </button>
+            </div>
+            <div class="prop-row-split">
+              <div>
+                <label class="prop-label">Ukuran Font (<span id="fontSizeVal">16</span>px)</label>
+                <input type="range" id="propFontSize" min="10" max="60" value="16" oninput="
+                      document.getElementById('fontSizeVal').innerText =
+                        this.value;
+                      updateSelectedElementStyle('fontSize', this.value + 'px');
+                    " class="prop-range" />
+              </div>
+              <div>
+                <label class="prop-label">Ketebalan</label>
+                <select id="propFontWeight" onchange="
+                      updateSelectedElementStyle('fontWeight', this.value)
+                    " class="prop-select">
+                  <option value="300">Tipis (Light)</option>
+                  <option value="400">Normal (Regular)</option>
+                  <option value="600">Sedang (Semi-Bold)</option>
+                  <option value="700">Tebal (Bold)</option>
+                  <option value="800">Sangat Tebal</option>
+                </select>
+              </div>
+            </div>
+            <div class="prop-row">
+              <label class="prop-label">Warna & Rata Teks</label>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                <!-- Minimalist trigger row in sidebar for Text Color -->
+                <div id="textColorTriggerBox" class="fill-trigger-box" onclick="toggleTextColorPopover(event)"
+                  title="Klik untuk ubah warna / gradient teks">
+                  <div id="textColorTriggerSwatch" class="fill-trigger-swatch"></div>
+                  <span id="textColorTriggerHex" class="fill-trigger-hex">#2C5D6B</span>
+                  <span id="textColorTriggerOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+
+                <select id="propTextAlign" onchange="
+                      updateSelectedElementStyle('textAlign', this.value)
+                    " class="prop-select-compact" title="Rata Paragraf">
+                  <option value="left">Kiri</option>
+                  <option value="center">Tengah</option>
+                  <option value="right">Kanan</option>
+                  <option value="justify">Rata Kiri-Kanan</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Title Effects (Text Stroke & Text Shadow for Title Element) -->
+            <div id="groupTitleEffects" class="hidden"
+              style="margin-top: 10px; border-top: 1px dashed rgba(56, 160, 196, 0.2); padding-top: 10px;">
+              <!-- Text Stroke Control -->
+              <div class="prop-row">
+                <label class="prop-label">Stroke Teks (Garis Luar)</label>
+                <div style="display: flex; align-items: flex-end; gap: 8px;">
+                  <div style="flex: 1;">
+                    <div
+                      style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted, #7a8a94); margin-bottom: 2px;">
+                      <span>Ketebalan</span>
+                      <span><span id="titleStrokeWidthVal">0</span>px</span>
+                    </div>
+                    <input type="range" id="propTitleStrokeWidth" min="0" max="10" step="0.5" value="0"
+                      class="prop-range" oninput="updateSelectedElementTitleStrokeWidth(this.value)" />
+                  </div>
+                  <div id="propTitleStrokeColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('textStrokeColorData', 'Warna Stroke Teks', 'propTitleStrokeColorTrigger', 'propTitleStrokeColorSwatch', 'propTitleStrokeColorHex', 'propTitleStrokeColorOpacity', event)"
+                    title="Klik untuk ubah warna stroke teks">
+                    <div id="propTitleStrokeColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propTitleStrokeColorHex" class="fill-trigger-hex">#000000</span>
+                    <span id="propTitleStrokeColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Text Shadow Control -->
+              <div class="prop-row" style="margin-top: 10px;">
+                <label class="prop-label">Shadow Teks (Bayangan Teks)</label>
+                <div style="display: flex; align-items: flex-end; gap: 8px; margin-bottom: 6px;">
+                  <div style="flex: 1;">
+                    <div
+                      style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted, #7a8a94); margin-bottom: 2px;">
+                      <span>Blur</span>
+                      <span><span id="titleShadowBlurVal">0</span>px</span>
+                    </div>
+                    <input type="range" id="propTitleShadowBlur" min="0" max="30" step="1" value="0" class="prop-range"
+                      oninput="updateSelectedElementTitleShadowBlur(this.value)" />
+                  </div>
+                  <div id="propTitleShadowColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('textShadowColorData', 'Warna Bayangan Teks', 'propTitleShadowColorTrigger', 'propTitleShadowColorSwatch', 'propTitleShadowColorHex', 'propTitleShadowColorOpacity', event)"
+                    title="Klik untuk ubah warna bayangan teks">
+                    <div id="propTitleShadowColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propTitleShadowColorHex" class="fill-trigger-hex">#000000</span>
+                    <span id="propTitleShadowColorOpacity" class="fill-trigger-opacity">50%</span>
+                  </div>
+                </div>
+                <div class="prop-row-split" style="gap: 8px; margin-top: 4px;">
+                  <div>
+                    <div
+                      style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted, #7a8a94); margin-bottom: 2px;">
+                      <span>Offset X</span>
+                      <span><span id="titleShadowOffsetXVal">0</span>px</span>
+                    </div>
+                    <input type="range" id="propTitleShadowOffsetX" min="-20" max="20" step="1" value="0"
+                      class="prop-range" oninput="updateSelectedElementTitleShadowOffsetX(this.value)" />
+                  </div>
+                  <div>
+                    <div
+                      style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted, #7a8a94); margin-bottom: 2px;">
+                      <span>Offset Y</span>
+                      <span><span id="titleShadowOffsetYVal">2</span>px</span>
+                    </div>
+                    <input type="range" id="propTitleShadowOffsetY" min="-20" max="20" step="1" value="2"
+                      class="prop-range" oninput="updateSelectedElementTitleShadowOffsetY(this.value)" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating Popover Box for Text Color -->
+            <div id="textColorPopoverBox" class="fill-popover-box hidden" onclick="event.stopPropagation()">
+              <div class="fill-popover-header">
+                <span class="fill-popover-title">Warna Teks</span>
+                <button type="button" class="fill-popover-close" onclick="closeTextColorPopover()" title="Tutup">
+                  <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 14px; height: 14px;" />
+                </button>
+              </div>
+              <div class="fill-type-row">
+                <button class="fill-tab active" id="textTabSolid" onclick="setTextColorType('solid')">Solid</button>
+                <button class="fill-tab" id="textTabLinear" onclick="setTextColorType('linear')">Linear</button>
+                <button class="fill-tab" id="textTabRadial" onclick="setTextColorType('radial')">Radial</button>
+              </div>
+              <!-- Solid row -->
+              <div id="solidTextColorRow" class="fs-color-row">
+                <input type="color" id="textColorInput" class="fs-swatch-input"
+                  oninput="onTextColorSolidColor(this.value)" value="#2c5d6b" title="Pilih warna teks" />
+                <input type="text" id="textColorHexInput" class="fs-hex-input" maxlength="6" placeholder="2c5d6b"
+                  oninput="onTextColorHexText(this.value)" />
+                <input type="number" id="textColorOpacityInput" class="fs-opacity-input" min="0" max="100" value="100"
+                  oninput="onTextColorOpacity(this.value); document.getElementById('textColorOpacitySlider').value=this.value;" />
+                <span class="fs-percent">%</span>
+              </div>
+              <div id="solidTextColorOpacityRow" class="fs-slider-row">
+                <input type="range" id="textColorOpacitySlider" min="0" max="100" value="100" class="prop-range"
+                  oninput="document.getElementById('textColorOpacityInput').value=this.value; onTextColorOpacity(this.value);" />
+              </div>
+              <!-- Gradient panel -->
+              <div id="gradientTextColorPanel" class="hidden">
+                <div class="grad-preview-wrap">
+                  <div id="textGradPreviewBar" class="grad-preview-bar"></div>
+                </div>
+                <div id="textGradAngleRow" class="fs-slider-row" style="margin-top:8px;">
+                  <label class="prop-label">Sudut (<span id="textGradAngleLbl">135</span>°)</label>
+                  <div class="slider-number-row">
+                    <input type="range" id="textGradAngleSlider" min="0" max="360" value="135" class="prop-range"
+                      oninput="document.getElementById('textGradAngleLbl').innerText=this.value; document.getElementById('textGradAngleInput').value=this.value; onTextGradientAngleChange(this.value);" />
+                    <input type="number" id="textGradAngleInput" min="0" max="360" value="135"
+                      class="prop-input-number prop-input-mini"
+                      oninput="const v=((parseInt(this.value)||0)+360)%361; document.getElementById('textGradAngleLbl').innerText=v; document.getElementById('textGradAngleSlider').value=v; onTextGradientAngleChange(v);" />
+                  </div>
+                </div>
+                <div class="grad-stops-header">
+                  <span class="prop-label">Stops</span>
+                  <button class="fs-add-stop-btn" onclick="addTextGradientStop()" title="Tambah stop">+</button>
+                </div>
+                <div id="textGradStopsList" class="grad-stops-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Component Settings -->
+          <div id="groupImage" class="prop-group hidden">
+            <div class="prop-row">
+              <label class="prop-label" style="display: flex; align-items: center; gap: 6px;">
+                <img src="/static/image/icon/images.svg" alt="Images"
+                  style="width: 18px; height: 18px; opacity: 0.7;" /> Upload File Gambar
+              </label>
+              <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+                <button type="button" class="btn-image-upload"
+                  style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <img src="/static/image/icon/images.svg" alt="Images"
+                    style="width: 16px; height: 16px; opacity: 0.7;" /> Pilih File Gambar
+                </button>
+                <input type="file" id="propImageUpload" accept="image/*" onchange="uploadElementImage(event)"
+                  style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;" />
+              </div>
+            </div>
+
+            <div class="prop-row" style="margin-top: 8px;">
+              <label class="prop-label" style="display: flex; align-items: center; justify-content: space-between;">
+                <span>Crop / Potong Area Gambar</span>
+              </label>
+              <button type="button" class="btn-crop-image-trigger" onclick="openElementImageCropModal(); return false;"
+                style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; background: #eef6f9; border: 1.5px solid #bddce7; border-radius: 8px; color: #2c5d6b; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                <img src="/static/image/icon/crop.svg" alt="Crop" style="width: 16px; height: 16px;" />
+                <span>Atur Crop Area (Modal)</span>
+              </button>
+            </div>
+
+            <div class="prop-row">
+              <label class="prop-label">Skala Tampilan Gambar (Object Fit)</label>
+              <select id="propObjectFit" onchange="updateSelectedElementStyle('objectFit', this.value)"
+                class="prop-select">
+                <option value="cover">
+                  Penuhi & Potong Sesuai Box (Cover)
+                </option>
+                <option value="contain">Utuh Tanpa Potong (Contain)</option>
+                <option value="fill">Tarik Paksa Sesuai Box (Fill)</option>
+              </select>
+            </div>
+
+            <!-- Shape Tool Panel -->
+            <div class="ai-assist-panel" style="margin-top: 12px;">
+              <div class="ai-assist-header">
+                <div class="ai-assist-icon-box">
+                  <img src="/static/image/icon/shape-tool.svg" alt="Shape Tool" />
+                </div>
+                <span class="ai-assist-label">Shape Tool</span>
+              </div>
+              <button onclick="openShapeEditorModal(); return false;" class="ai-assist-btn">
+                <span>Pilih Shape</span>
+              </button>
+            </div>
+
+            <!-- Transparent Background Panel -->
+            <div class="ai-assist-panel">
+              <div class="ai-assist-header">
+                <div class="ai-assist-icon-box">
+                  <img src="/static/image/icon/ai-rembg.svg" alt="Transparent Background" />
+                </div>
+                <span class="ai-assist-label">Transparent Background</span>
+              </div>
+              <button type="button" onclick="triggerImageRembg(); return false;" class="ai-assist-btn">
+                <span>Transparankan Latar</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Fill & Stroke Panel (Shape, Container, Column, Row, Button) -->
+          <div id="groupShape" class="prop-group hidden">
+            <!-- Shape Tool Panel -->
+            <div id="panelBoxShapeEditor" class="ai-assist-panel hidden" style="margin-top: 0; margin-bottom: 12px;">
+              <div class="ai-assist-header">
+                <div class="ai-assist-icon-box">
+                  <img src="/static/image/icon/shape-tool.svg" alt="Shape Tool" />
+                </div>
+                <span class="ai-assist-label">Shape Tool</span>
+              </div>
+              <button onclick="openShapeEditorModal(); return false;" class="ai-assist-btn">
+                <span>Pilih Shape</span>
+              </button>
+            </div>
+
+            <!-- ── FILL SECTION ────────────────────── -->
+            <div class="fs-section" id="fillCardSection">
+              <div class="fs-section-header">
+                <span class="fs-title">Fill</span>
+                <button id="btnFillToggle" class="fs-eye-btn fs-active" onclick="toggleFillEnabled()"
+                  title="Toggle Fill">
+                  <img src="/static/image/icon/show.svg" alt="Toggle Fill" class="fs-eye-icon" width="24" height="24">
+                </button>
+              </div>
+              <div id="fillContextHint" class="fs-context-hint hidden"></div>
+              <div id="fillBodyPanel">
+                <!-- Minimalist trigger row in sidebar (Gausah melebar) -->
+                <div id="fillTriggerBox" class="fill-trigger-box" onclick="toggleFillPopover(event)"
+                  title="Klik untuk ubah warna / fill">
+                  <div id="fillTriggerSwatch" class="fill-trigger-swatch"></div>
+                  <span id="fillTriggerHex" class="fill-trigger-hex">#38A0C4</span>
+                  <span id="fillTriggerOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+
+                <!-- Floating Popover Box ("box gitunah" muncul saat klik warna) -->
+                <div id="fillPopoverBox" class="fill-popover-box hidden" onclick="event.stopPropagation()">
+                  <div class="fill-popover-header">
+                    <span class="fill-popover-title" id="fillPopoverTitle">Fill / Warna</span>
+                    <button type="button" class="fill-popover-close" onclick="closeFillPopover()" title="Tutup">
+                      <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 14px; height: 14px;" />
+                    </button>
+                  </div>
+                  <div class="fill-type-row">
+                    <button class="fill-tab active" id="tabSolid" onclick="setFillType('solid')">Solid</button>
+                    <button class="fill-tab" id="tabLinear" onclick="setFillType('linear')">Linear</button>
+                    <button class="fill-tab" id="tabRadial" onclick="setFillType('radial')">Radial</button>
+                  </div>
+                  <!-- Solid row -->
+                  <div id="solidFillRow" class="fs-color-row">
+                    <input type="color" id="fillColorInput" class="fs-swatch-input"
+                      oninput="onFillSolidColor(this.value)" value="#38a0c4" title="Pilih warna" />
+                    <input type="text" id="fillHexInput" class="fs-hex-input" maxlength="6" placeholder="38a0c4"
+                      oninput="onFillHexText(this.value)" />
+                    <input type="number" id="fillOpacityInput" class="fs-opacity-input" min="0" max="100" value="100"
+                      oninput="onFillOpacity(this.value); document.getElementById('fillOpacitySlider').value=this.value;" />
+                    <span class="fs-percent">%</span>
+                  </div>
+                  <div id="solidOpacityRow" class="fs-slider-row">
+                    <input type="range" id="fillOpacitySlider" min="0" max="100" value="100" class="prop-range"
+                      oninput="document.getElementById('fillOpacityInput').value=this.value; onFillOpacity(this.value);" />
+                  </div>
+                  <!-- Gradient panel -->
+                  <div id="gradientFillPanel" class="hidden">
+                    <div class="grad-preview-wrap">
+                      <div id="gradPreviewBar" class="grad-preview-bar"></div>
+                    </div>
+                    <div id="gradAngleRow" class="fs-slider-row" style="margin-top:8px;">
+                      <label class="prop-label">Sudut (<span id="gradAngleLbl">135</span>°)</label>
+                      <div class="slider-number-row">
+                        <input type="range" id="gradAngleSlider" min="0" max="360" value="135" class="prop-range"
+                          oninput="document.getElementById('gradAngleLbl').innerText=this.value; document.getElementById('gradAngleInput').value=this.value; onGradientAngleChange(this.value);" />
+                        <input type="number" id="gradAngleInput" min="0" max="360" value="135"
+                          class="prop-input-number prop-input-mini"
+                          oninput="const v=((parseInt(this.value)||0)+360)%361; document.getElementById('gradAngleLbl').innerText=v; document.getElementById('gradAngleSlider').value=v; onGradientAngleChange(v);" />
+                      </div>
+                    </div>
+                    <div class="grad-stops-header">
+                      <span class="prop-label">Stops</span>
+                      <button class="fs-add-stop-btn" onclick="addGradientStop()" title="Tambah stop">+</button>
+                    </div>
+                    <div id="gradStopsList" class="grad-stops-list"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Button CTA Settings -->
+          <div id="groupButton" class="prop-group hidden">
+            <!-- Pilihan Tipe Tombol -->
+            <div class="prop-row" style="margin-bottom: 8px;">
+              <label class="prop-label">Pilih Tipe Tombol</label>
+              <div class="button-design-grid">
+                <!-- Mode: Simple Button -->
+                <div class="button-design-card active" id="btnDesignCardSimple" data-btn-design="simple_button"
+                  onclick="updateButtonDesignType('simple_button')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-tombol.svg" alt="Simple Button" width="26" height="26">
+                  </div>
+                  <span class="design-title">Simple Button</span>
+                </div>
+
+                <!-- Mode: Input Button -->
+                <div class="button-design-card" id="btnDesignCardInput" data-btn-design="input_button"
+                  onclick="updateButtonDesignType('input_button')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-tombol-input.svg" alt="Input Button" width="26" height="26">
+                  </div>
+                  <span class="design-title">Input Button</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pengaturan Teks & Link Tombol -->
+            <div class="prop-row-split" style="gap: 8px;">
+              <div style="flex: 1;">
+                <label class="prop-label">Teks Tombol</label>
+                <input type="text" id="propBtnText" class="prop-input" placeholder="Teks Tombol..."
+                  oninput="updateSelectedElementContent()" />
+              </div>
+              <div style="flex: 1;">
+                <label class="prop-label">Jenis Tautan</label>
+                <select id="propBtnLinkType" class="prop-select" onchange="updateSelectedElementLinkType(this.value)">
+                  <option value="whatsapp">WhatsApp</option>
+                  <option value="url">Link Web / Sosmed</option>
+                </select>
+              </div>
+            </div>
+            <div class="prop-row" style="margin-top: 6px;">
+              <label class="prop-label" id="propBtnUrlLabel">Tautan WhatsApp (https://wa.me/...)</label>
+              <input type="text" id="propBtnUrl" class="prop-input" placeholder="https://wa.me/628..."
+                oninput="updateSelectedElementLink(this.value)" />
+            </div>
+
+            <!-- PENGATURAN KHUSUS TEXTAREA INPUT (Tampil saat Input Button dipilih) -->
+            <div id="btnInputSettingsGroup" class="hidden" style="margin-top: 8px;">
+              <div style="margin-bottom: 6px;">
+                <label class="prop-label">Tata Letak / Style Posisi</label>
+                <select id="propBtnInputLayout" class="prop-select"
+                  onchange="updateButtonInputConfig('inputLayout', this.value)">
+                  <option value="stacked">Full Lebar Button di Bawah</option>
+                  <option value="inline">Sejajar dengan Button</option>
+                </select>
+              </div>
+
+              <div style="margin-bottom: 6px;">
+                <label class="prop-label">Placeholder Text</label>
+                <input type="text" id="propBtnPlaceholder" class="prop-input" placeholder="Ketik placeholder..."
+                  oninput="updateButtonInputConfig('placeholderText', this.value)" />
+              </div>
+
+              <div class="prop-row" style="margin-top: 6px;">
+                <label class="prop-label">Warna Input Bg</label>
+                <div id="propBtnInputBgTrigger" class="fill-trigger-box"
+                  onclick="openFillPopoverForTarget('btnInputBgData', 'Warna Input Bg', 'propBtnInputBgTrigger', 'propBtnInputBgSwatch', 'propBtnInputBgHex', 'propBtnInputBgOpacity', event)"
+                  title="Klik untuk ubah warna solid latar input">
+                  <div id="propBtnInputBgSwatch" class="fill-trigger-swatch"></div>
+                  <span id="propBtnInputBgHex" class="fill-trigger-hex">#FFFFFF</span>
+                  <span id="propBtnInputBgOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+              </div>
+
+              <div class="prop-row" style="margin-top: 6px;">
+                <label class="prop-label">Warna Teks Input</label>
+                <div id="propBtnInputTextColorTrigger" class="fill-trigger-box"
+                  onclick="openFillPopoverForTarget('btnInputTextColorData', 'Warna Teks Input', 'propBtnInputTextColorTrigger', 'propBtnInputTextColorSwatch', 'propBtnInputTextColorHex', 'propBtnInputTextColorOpacity', event)"
+                  title="Klik untuk ubah warna teks input">
+                  <div id="propBtnInputTextColorSwatch" class="fill-trigger-swatch"></div>
+                  <span id="propBtnInputTextColorHex" class="fill-trigger-hex">#2C5D6B</span>
+                  <span id="propBtnInputTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+              </div>
+
+              <div class="prop-row" style="margin-top: 6px;">
+                <label class="prop-label">Warna Border Input</label>
+                <div id="propBtnInputBorderColorTrigger" class="fill-trigger-box"
+                  onclick="openFillPopoverForTarget('btnInputBorderColorData', 'Warna Border Input', 'propBtnInputBorderColorTrigger', 'propBtnInputBorderColorSwatch', 'propBtnInputBorderColorHex', 'propBtnInputBorderColorOpacity', event)"
+                  title="Klik untuk ubah warna border input">
+                  <div id="propBtnInputBorderColorSwatch" class="fill-trigger-swatch"></div>
+                  <span id="propBtnInputBorderColorHex" class="fill-trigger-hex">#BDDCE7</span>
+                  <span id="propBtnInputBorderColorOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="prop-row-split" style="gap: 8px; margin-top: 6px;">
+              <div>
+                <label class="prop-label">Ukuran Font (<span id="btnFontSizeVal">16</span>px)</label>
+                <input type="range" id="propBtnFontSize" min="10" max="60" value="16" oninput="
+                      document.getElementById('btnFontSizeVal').innerText = this.value;
+                      updateSelectedElementStyle('fontSize', this.value + 'px');
+                    " class="prop-range" />
+              </div>
+              <div>
+                <label class="prop-label">Ketebalan</label>
+                <select id="propBtnFontWeight" onchange="updateSelectedElementStyle('fontWeight', this.value)"
+                  class="prop-select">
+                  <option value="300">Tipis (Light)</option>
+                  <option value="400">Normal (Regular)</option>
+                  <option value="600">Sedang (Semi-Bold)</option>
+                  <option value="700">Tebal (Bold)</option>
+                  <option value="800">Sangat Tebal</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="prop-row" style="margin-top: 6px;">
+              <label class="prop-label">Warna Teks Tombol</label>
+              <div id="propBtnTextColorTrigger" class="fill-trigger-box"
+                onclick="openFillPopoverForTarget('btnTextFillData', 'Warna Teks Tombol', 'propBtnTextColorTrigger', 'propBtnTextColorSwatch', 'propBtnTextColorHex', 'propBtnTextColorOpacity', event)"
+                title="Klik untuk ubah warna solid / linear / radial teks tombol">
+                <div id="propBtnTextColorSwatch" class="fill-trigger-swatch"></div>
+                <span id="propBtnTextColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                <span id="propBtnTextColorOpacity" class="fill-trigger-opacity">100%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carousel Component Settings (Multi-Slide Container) -->
+          <div id="groupCarousel" class="prop-group hidden">
+            <!-- Slide Management Header -->
+            <div class="prop-row">
+              <label class="prop-label" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Kelola Slide Carousel</span>
+                <span id="propCarouselSlideCount" style="font-weight: bold; color: #38a0c4; font-size: 12px;">(3
+                  Slide)</span>
+              </label>
+              <div id="propCarouselSlideTabs"
+                style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-top: 6px;">
+                <!-- Dynamically rendered slide tabs -->
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button type="button" onclick="addCarouselSlide()" class="btn-image-upload"
+                  style="flex: 1; padding: 6px 10px; font-size: 11px; font-weight: 700; color: #38a0c4; border: 1px solid #38a0c4; background: #f0f9fc; border-radius: 8px; cursor: pointer;">
+                  + Tambah Slide
+                </button>
+                <button type="button" onclick="deleteCarouselSlide()"
+                  style="padding: 6px 12px; font-size: 11px; font-weight: 700; color: #ff6b6b; border: 1px solid #ffc1bd; background: #fff5f5; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                  <img src="/static/image/icon/delete.svg" style="width: 14px; height: 14px;" alt="Hapus">
+                  <span>Hapus Slide</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Arrow Navigation Styling -->
+            <div class="prop-row" style="margin-top: 12px; border-top: 1px dashed #bddce7; padding-top: 10px;">
+              <label class="prop-label" style="font-weight: 700; color: #2c5d6b;">Desain & Warna Panah Navigasi</label>
+
+              <div class="prop-row-split" style="gap: 8px; margin-top: 6px;">
+                <div>
+                  <label class="prop-label" style="font-size: 11px;">Warna Latar Panah</label>
+                  <div id="propCarouselArrowBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('arrowBgData', 'Warna Latar Panah', 'propCarouselArrowBgTrigger', 'propCarouselArrowBgSwatch', 'propCarouselArrowBgHex', 'propCarouselArrowBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial latar panah">
+                    <div id="propCarouselArrowBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propCarouselArrowBgHex" class="fill-trigger-hex">#000000</span>
+                    <span id="propCarouselArrowBgOpacity" class="fill-trigger-opacity">45%</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="prop-label" style="font-size: 11px;">Warna Ikon Panah</label>
+                  <div id="propCarouselArrowColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('arrowColorData', 'Warna Ikon Panah', 'propCarouselArrowColorTrigger', 'propCarouselArrowColorSwatch', 'propCarouselArrowColorHex', 'propCarouselArrowColorOpacity', event)"
+                    title="Klik untuk ubah warna solid ikon panah">
+                    <div id="propCarouselArrowColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propCarouselArrowColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propCarouselArrowColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div>
+                  <label class="prop-label" style="font-size: 11px;">Warna Hover Panah</label>
+                  <div id="propCarouselArrowHoverBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('arrowHoverBgData', 'Warna Hover Panah', 'propCarouselArrowHoverBgTrigger', 'propCarouselArrowHoverBgSwatch', 'propCarouselArrowHoverBgHex', 'propCarouselArrowHoverBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial hover panah">
+                    <div id="propCarouselArrowHoverBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propCarouselArrowHoverBgHex" class="fill-trigger-hex">#38A0C4</span>
+                    <span id="propCarouselArrowHoverBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+                <div>
+                  <label class="prop-label" style="font-size: 11px;">Bentuk Panah</label>
+                  <select id="propCarouselArrowShape" class="prop-select"
+                    onchange="updateCarouselArrowConfig('arrowShape', this.value)">
+                    <option value="50%">Bulat Sempurna (Circle)</option>
+                    <option value="10px">Kapsul Melengkung (Rounded)</option>
+                    <option value="2px">Kotak (Square)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Auto Play Speed -->
+            <div class="prop-row" style="margin-top: 10px;">
+              <label class="prop-label">Auto Play Speed (detik, 0 = mati)</label>
+              <input type="number" id="propCarouselSpeed" min="0" max="10" value="3"
+                oninput="updateSelectedCarouselSpeed(this.value)" class="prop-input-number" />
+            </div>
+          </div>
+
+          <!-- Row Component Settings -->
+          <div id="groupRow" class="prop-group hidden">
+            <div class="prop-row">
+              <label class="prop-label">Jumlah Kolom dalam Baris</label>
+              <select id="propRowColumnsCount" onchange="updateRowColumnsCount(this.value)" class="prop-select">
+                <option value="1">1 Kolom</option>
+                <option value="2">2 Kolom</option>
+                <option value="3">3 Kolom</option>
+                <option value="4">4 Kolom</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Column Component Settings -->
+          <div id="groupColumn" class="prop-group hidden">
+            <div class="prop-row">
+              <label class="prop-label">Lebar Kolom (Proporsi Horizontal)</label>
+              <select id="propColumnWidth" onchange="updateColumnWidth(this.value)" class="prop-select">
+                <option value="100%">Penuh (100%)</option>
+                <option value="50%">Setengah (50%)</option>
+                <option value="33.33%">Sepertiga (33.3%)</option>
+                <option value="66.66%">Dua Pertiga (66.7%)</option>
+                <option value="25%">Seperempat (25%)</option>
+                <option value="75%">Tiga Perempat (75%)</option>
+                <option value="auto">Otomatis (Flex Auto)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Media Embed Component Settings -->
+          <div id="groupMediaEmbed" class="prop-group hidden">
+            <!-- 1. URL LINK & AUTOPLAY CONFIG -->
+            <div class="prop-row">
+              <label class="prop-label">Link / URL Media (YouTube, Maps, TikTok, IG, FB, MP4)</label>
+              <input type="text" id="propMediaEmbedUrl" class="prop-input"
+                oninput="updateMediaEmbedConfig('url', this.value)"
+                placeholder="Paste URL atau kode iframe <iframe src='...'>" />
+              <div style="font-size: 10px; color: #7a8a94; margin-top: 4px;">
+                Mendukung: YouTube (termasuk Shorts), Google Maps, TikTok, IG Reels, FB Video, & MP4.
+              </div>
+            </div>
+
+            <div class="prop-row" style="margin-top: 6px;">
+              <label
+                style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; font-size: 11px; color: #2c5d6b;">
+                <input type="checkbox" id="propMediaAutoplay" class="custom-checkbox"
+                  onchange="updateMediaEmbedConfig('autoplay', this.checked)" checked />
+                <span>Autoplay Video / Cuplikan Otomatis (Muted)</span>
+              </label>
+            </div>
+
+            <!-- 1.5. SKALA KONTEN FRAME -->
+            <div class="prop-row" style="margin-top: 10px; border-top: 1px dashed #bddce7; padding-top: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="prop-label" style="font-weight: 700; color: #2c5d6b;">Zoom / Skala Konten (<span
+                    id="frameScaleLbl">100</span>%)</label>
+              </div>
+              <div class="slider-number-row">
+                <input type="range" id="propMediaFrameScale" min="50" max="200" value="100" class="prop-range"
+                  oninput="document.getElementById('frameScaleLbl').innerText=this.value; updateMediaEmbedLiveStyle('frameScale', this.value);" />
+              </div>
+            </div>
+
+            <!-- 2. SINGLE COLLAPSIBLE FRAME & CARD CUSTOMIZATION SECTION -->
+            <div class="fs-section" style="margin-top: 10px;">
+              <div class="fs-section-header">
+                <span class="fs-title">Kustomisasi Tampilan Frame & Card</span>
+                <button type="button" id="btnMediaFrameToggle" class="fs-eye-btn"
+                  onclick="toggleMediaSection(this, 'mediaFrameBodyPanel')" title="Kustomisasi Tampilan Frame & Card">
+                  <img src="/static/image/icon/show.svg" alt="Toggle Frame" class="fs-eye-icon" width="24" height="24">
+                </button>
+              </div>
+
+              <div id="mediaFrameBodyPanel" class="hidden"
+                style="margin-top: 10px; display: flex; flex-direction: column; gap: 12px;">
+
+                <!-- A. HEADER BROWSER CONFIG -->
+                <div class="prop-row">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <span class="prop-label" style="font-weight: 700; color: #2c5d6b; margin-bottom: 0;">Header Browser
+                      Frame</span>
+                    <label
+                      style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; font-size: 11px;">
+                      <input type="checkbox" id="propMediaShowHeader" class="custom-checkbox"
+                        onchange="updateMediaEmbedConfig('showHeader', this.checked)" checked />
+                      Tampilkan Header
+                    </label>
+                  </div>
+
+                  <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Warna Latar Header</label>
+                      <div id="propMediaHeaderBgTrigger" class="fill-trigger-box"
+                        onclick="openFillPopoverForTarget('headerBgData', 'Warna Latar Header', 'propMediaHeaderBgTrigger', 'propMediaHeaderBgSwatch', 'propMediaHeaderBgHex', 'propMediaHeaderBgOpacity', event)"
+                        title="Klik untuk ubah warna solid / linear / radial latar header">
+                        <div id="propMediaHeaderBgSwatch" class="fill-trigger-swatch"></div>
+                        <span id="propMediaHeaderBgHex" class="fill-trigger-hex">#E2F0F5</span>
+                        <span id="propMediaHeaderBgOpacity" class="fill-trigger-opacity">100%</span>
+                      </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Warna Teks Header</label>
+                      <div id="propMediaHeaderColorTrigger" class="fill-trigger-box"
+                        onclick="openFillPopoverForTarget('headerColorData', 'Warna Teks Header', 'propMediaHeaderColorTrigger', 'propMediaHeaderColorSwatch', 'propMediaHeaderColorHex', 'propMediaHeaderColorOpacity', event)"
+                        title="Klik untuk ubah warna solid teks header">
+                        <div id="propMediaHeaderColorSwatch" class="fill-trigger-swatch"></div>
+                        <span id="propMediaHeaderColorHex" class="fill-trigger-hex">#2C5D6B</span>
+                        <span id="propMediaHeaderColorOpacity" class="fill-trigger-opacity">100%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- B. COVER IMAGE THUMBNAIL UPLOAD -->
+                <div class="prop-row" style="border-top: 1px dashed #bddce7; padding-top: 10px;">
+                  <label class="prop-label" style="font-weight: 700; color: #2c5d6b;">Gambar Cover / Thumbnail Custom
+                    Frame</label>
+                  <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px; margin-bottom: 6px;">
+                    <input type="text" id="propMediaCoverImage" class="prop-input"
+                      oninput="updateMediaEmbedConfig('coverImage', this.value)"
+                      placeholder="URL gambar atau upload..." />
+                  </div>
+                  <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+                    <button type="button" class="btn-image-upload"
+                      style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 6px;">
+                      <img src="/static/image/icon/images.svg" alt="Images"
+                        style="width: 14px; height: 14px; opacity: 0.7;" /> Pilih File Cover Gambar
+                    </button>
+                    <input type="file" id="propMediaCoverUpload" accept="image/*"
+                      onchange="uploadMediaCoverImage(event)"
+                      style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;" />
+                  </div>
+                </div>
+
+                <!-- C. KUSTOMISASI JUDUL & SUBTITLE -->
+                <div class="prop-row" style="border-top: 1px dashed #bddce7; padding-top: 10px;">
+                  <label class="prop-label" style="font-weight: 700; color: #2c5d6b; margin-bottom: 6px;">Kustomisasi
+                    Judul & Deskripsi
+                    Kartu</label>
+
+                  <!-- 1. Judul Frame & Warna Judul -->
+                  <div style="margin-top: 6px;">
+                    <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Judul Frame</label>
+                    <input type="text" id="propMediaCustomTitle" class="prop-input"
+                      oninput="updateMediaEmbedConfig('customTitle', this.value)"
+                      placeholder="Contoh: Kunjungi Website Kami" />
+                    <div style="margin-top: 6px; display: flex; flex-direction: column; align-items: flex-start;">
+                      <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Warna Judul</label>
+                      <div id="propMediaTitleColorTrigger" class="fill-trigger-box"
+                        onclick="openFillPopoverForTarget('titleColorData', 'Warna Judul', 'propMediaTitleColorTrigger', 'propMediaTitleColorSwatch', 'propMediaTitleColorHex', 'propMediaTitleColorOpacity', event)"
+                        title="Klik untuk ubah warna solid / linear / radial judul">
+                        <div id="propMediaTitleColorSwatch" class="fill-trigger-swatch"></div>
+                        <span id="propMediaTitleColorHex" class="fill-trigger-hex">#2C5D6B</span>
+                        <span id="propMediaTitleColorOpacity" class="fill-trigger-opacity">100%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 2. Deskripsi Frame & Warna Deskripsi -->
+                  <div style="margin-top: 10px;">
+                    <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Deskripsi / Subtitle
+                      Frame</label>
+                    <input type="text" id="propMediaCustomDesc" class="prop-input"
+                      oninput="updateMediaEmbedConfig('customDesc', this.value)"
+                      placeholder="Contoh: Klik tombol di bawah untuk melihat rincian..." />
+                    <div style="margin-top: 6px; display: flex; flex-direction: column; align-items: flex-start;">
+                      <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Warna Deskripsi</label>
+                      <div id="propMediaDescColorTrigger" class="fill-trigger-box"
+                        onclick="openFillPopoverForTarget('descColorData', 'Warna Deskripsi', 'propMediaDescColorTrigger', 'propMediaDescColorSwatch', 'propMediaDescColorHex', 'propMediaDescColorOpacity', event)"
+                        title="Klik untuk ubah warna solid deskripsi">
+                        <div id="propMediaDescColorSwatch" class="fill-trigger-swatch"></div>
+                        <span id="propMediaDescColorHex" class="fill-trigger-hex">#7A8A94</span>
+                        <span id="propMediaDescColorOpacity" class="fill-trigger-opacity">100%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- D. TOMBOL CTA LINK -->
+                <div class="prop-row" style="border-top: 1px dashed #bddce7; padding-top: 10px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <span class="prop-label" style="font-weight: 700; color: #2c5d6b; margin-bottom: 0;">Tombol CTA
+                      Link</span>
+                    <label
+                      style="display: flex; align-items: center; gap: 6px; font-weight: normal; cursor: pointer; font-size: 11px;">
+                      <input type="checkbox" id="propMediaShowBtn" class="custom-checkbox"
+                        onchange="updateMediaEmbedConfig('showBtn', this.checked)" checked />
+                      Tampilkan Tombol
+                    </label>
+                  </div>
+
+                  <div style="margin-top: 6px;">
+                    <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Teks Tombol CTA</label>
+                    <input type="text" id="propMediaBtnText" class="prop-input"
+                      oninput="updateMediaEmbedConfig('btnText', this.value)" placeholder="Buka Link / Website" />
+                  </div>
+
+                  <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Warna Tombol CTA</label>
+                      <div id="propMediaBtnBgTrigger" class="fill-trigger-box"
+                        onclick="openFillPopoverForTarget('btnBgData', 'Warna Tombol CTA', 'propMediaBtnBgTrigger', 'propMediaBtnBgSwatch', 'propMediaBtnBgHex', 'propMediaBtnBgOpacity', event)"
+                        title="Klik untuk ubah warna solid / linear / radial tombol CTA">
+                        <div id="propMediaBtnBgSwatch" class="fill-trigger-swatch"></div>
+                        <span id="propMediaBtnBgHex" class="fill-trigger-hex">#38A0C4</span>
+                        <span id="propMediaBtnBgOpacity" class="fill-trigger-opacity">100%</span>
+                      </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                      <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Warna Teks CTA</label>
+                      <div id="propMediaBtnColorTrigger" class="fill-trigger-box"
+                        onclick="openFillPopoverForTarget('btnColorData', 'Warna Teks CTA', 'propMediaBtnColorTrigger', 'propMediaBtnColorSwatch', 'propMediaBtnColorHex', 'propMediaBtnColorOpacity', event)"
+                        title="Klik untuk ubah warna solid teks CTA">
+                        <div id="propMediaBtnColorSwatch" class="fill-trigger-swatch"></div>
+                        <span id="propMediaBtnColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                        <span id="propMediaBtnColorOpacity" class="fill-trigger-opacity">100%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Box Interaktif Component Settings -->
+          <div id="groupBoxInteraktif" class="prop-group hidden">
+            <!-- 1. TIPE TAMPILAN BOX INTERAKTIF -->
+            <div class="prop-row">
+              <label class="prop-label">Pilih Tipe Box Interaktif</label>
+              <div class="box-design-grid">
+                <!-- Mode 1: Expand Collapse -->
+                <div class="box-design-card active" data-design="expand_collapse"
+                  onclick="updateBoxInteraktifConfig('mode', 'expand_collapse')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-box-interaktif-expand-collapse.svg" alt="Expand Collapse"
+                      width="26" height="26">
+                  </div>
+                  <span class="design-title">Expand Collapse</span>
+                </div>
+
+                <!-- Mode 2: Tabs Layout -->
+                <div class="box-design-card" data-design="tabs" onclick="updateBoxInteraktifConfig('mode', 'tabs')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-box-interaktif-tabs-layout.svg" alt="Tabs Layout" width="26"
+                      height="26">
+                  </div>
+                  <span class="design-title">Tabs Layout</span>
+                </div>
+
+                <!-- Mode 3: Flippable Card -->
+                <div class="box-design-card" data-design="flippable"
+                  onclick="updateBoxInteraktifConfig('mode', 'flippable')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-box-interaktif-flippable-card.svg" alt="Flippable Card"
+                      width="26" height="26">
+                  </div>
+                  <span class="design-title">Flippable Card</span>
+                </div>
+
+                <!-- Mode 4: Checkbox Box -->
+                <div class="box-design-card" data-design="checkbox"
+                  onclick="updateBoxInteraktifConfig('mode', 'checkbox')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-box-interaktif-checkbox.svg" alt="Checkbox Box" width="26"
+                      height="26">
+                  </div>
+                  <span class="design-title">Checkbox Box</span>
+                </div>
+
+                <!-- Mode 5: Radio Button Box -->
+                <div class="box-design-card" data-design="radio" onclick="updateBoxInteraktifConfig('mode', 'radio')">
+                  <div class="check-badge">✓</div>
+                  <div class="design-icon-box">
+                    <img src="/static/image/icon/elemen-box-interaktif-radio-button.svg" alt="Radio Button" width="26"
+                      height="26">
+                  </div>
+                  <span class="design-title">Radio Button</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. DAFTAR ITEM / TABS / OPSI MANAGER -->
+            <div id="boxItemsManagerRow" class="prop-row" style="margin-top: 10px;">
+              <label class="prop-label" id="boxItemsManagerLabel">Daftar Judul Panel</label>
+              <div id="boxItemsListContainer"
+                style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+                <!-- Dynamic item inputs generated by JS -->
+              </div>
+              <button type="button" id="btnBoxAddItem" class="btn-box-add-item" onclick="addBoxInteractiveItem()">
+                + Tambah Panel
+              </button>
+            </div>
+
+            <!-- 2b. PENGATURAN INTEGRASI TOMBOL (CHECKBOX & RADIO) -->
+            <div id="boxButtonIntegrationRow" class="hidden" style="margin-top: 10px;">
+              <label
+                style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2c5d6b; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="propBoxSendDataToButton" class="custom-checkbox"
+                  onchange="updateBoxInteraktifConfig('sendDataToButton', this.checked)" checked />
+                <span style="font-weight: 700;">Kirim Data ke Tombol</span>
+              </label>
+
+              <div id="boxMessageFormatGroup" class="prop-row" style="margin-top: 8px;">
+                <label class="prop-label">Format Pesan Tambahan</label>
+                <input type="text" id="propBoxMessageText" class="prop-input" placeholder="Pilihan Saya: {pilihan}"
+                  oninput="updateBoxInteraktifConfig('messageText', this.value)" />
+                <span style="font-size: 10px; color: #6c8a94; margin-top: 4px; display: block; line-height: 1.3;">
+                  Gunakan <b>{pilihan}</b> untuk menyisipkan opsi yang dicentang / dipilih ke dalam pesan WhatsApp atau
+                  tautan tombol.
+                </span>
+              </div>
+            </div>
+
+            <!-- 3. FLIP TOGGLE SIDE MANAGER -->
+            <div id="boxFlipManagerRow" class="prop-row hidden" style="margin-top: 10px;">
+              <label class="prop-label">Tampilan Sisi Card</label>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" id="btnFlipSideFront" class="btn-box-toggle-side active"
+                  onclick="toggleBoxInteractiveFlip(false)">Sisi Depan</button>
+                <button type="button" id="btnFlipSideBack" class="btn-box-toggle-side"
+                  onclick="toggleBoxInteractiveFlip(true)">Sisi Belakang</button>
+              </div>
+            </div>
+
+            <!-- 4. KUSTOMISASI WARNA -->
+            <div class="prop-row" style="margin-top: 10px;">
+              <label class="prop-label">Kustomisasi Warna</label>
+              <div class="prop-row-split" style="gap: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Fill
+                    Background Modul</label>
+                  <div id="propBoxBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('boxBgData', 'Fill Background Modul', 'propBoxBgTrigger', 'propBoxBgSwatch', 'propBoxBgHex', 'propBoxBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial latar background modul">
+                    <div id="propBoxBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propBoxBgHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propBoxBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Item /
+                    Card</label>
+                  <div id="propBoxItemBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('boxItemBgData', 'Warna Item / Card', 'propBoxItemBgTrigger', 'propBoxItemBgSwatch', 'propBoxItemBgHex', 'propBoxItemBgOpacity', event)"
+                    title="Klik untuk ubah warna item / card">
+                    <div id="propBoxItemBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propBoxItemBgHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propBoxItemBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="prop-row-split" style="gap: 8px; margin-top: 6px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks
+                    Judul/Tab</label>
+                  <div id="propBoxHeaderColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('boxHeaderColorData', 'Warna Teks Judul/Tab', 'propBoxHeaderColorTrigger', 'propBoxHeaderColorSwatch', 'propBoxHeaderColorHex', 'propBoxHeaderColorOpacity', event)"
+                    title="Klik untuk ubah warna teks judul/tab">
+                    <div id="propBoxHeaderColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propBoxHeaderColorHex" class="fill-trigger-hex">#2C5D6B</span>
+                    <span id="propBoxHeaderColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Aksens
+                    / Ikon</label>
+                  <div id="propBoxAccentColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('boxAccentColorData', 'Warna Aksens / Ikon', 'propBoxAccentColorTrigger', 'propBoxAccentColorSwatch', 'propBoxAccentColorHex', 'propBoxAccentColorOpacity', event)"
+                    title="Klik untuk ubah warna aksens / ikon">
+                    <div id="propBoxAccentColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propBoxAccentColorHex" class="fill-trigger-hex">#38A0C4</span>
+                    <span id="propBoxAccentColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+          <!-- General Box Model Layout Options -->
+          <div class="general-properties">
+            <div class="prop-row-split">
+              <div>
+                <label class="prop-label">Lebar Elemen (<span id="widthVal">80</span>%)</label>
+                <input type="range" id="propWidth" min="5" max="100" value="80" oninput="
+                      document.getElementById('widthVal').innerText =
+                        this.value;
+                      updateSelectedElementStyle('width', this.value + '%');
+                    " class="prop-range" />
+              </div>
+              <div id="boxBorderRadius">
+                <label class="prop-label">Lengkungan Sudut (Border Radius: <span
+                    id="borderRadiusVal">8</span>px)</label>
+                <input type="range" id="propBorderRadius" min="0" max="50" value="8" oninput="
+                      document.getElementById('borderRadiusVal').innerText = this.value;
+                      updateSelectedElementStyle(
+                        'borderRadius',
+                        this.value + 'px',
+                      );
+                    " class="prop-range" />
+              </div>
+            </div>
+
+            <!-- Specific Spacing Controls for Title & Text (Letter Spacing & Line Height) -->
+            <div id="boxTextSpacing" class="prop-row hidden" style="margin-top: 8px;">
+              <div class="prop-row-split" style="gap: 8px;">
+                <div>
+                  <label class="prop-label">Letter Spacing (<span id="letterSpacingVal">0</span>px)</label>
+                  <input type="range" id="propLetterSpacing" min="-2" max="20" value="0" step="1" oninput="
+                        document.getElementById('letterSpacingVal').innerText = this.value;
+                        updateSelectedElementStyle('letterSpacing', this.value + 'px');
+                      " class="prop-range" />
+                </div>
+                <div>
+                  <label class="prop-label">Line Height (<span id="lineHeightVal">1.2</span>)</label>
+                  <input type="range" id="propLineHeight" min="0.8" max="3.0" value="1.2" step="0.1" oninput="
+                        document.getElementById('lineHeightVal').innerText = this.value;
+                        updateSelectedElementStyle('lineHeight', this.value);
+                      " class="prop-range" />
+                </div>
+              </div>
+            </div>
+
+
+            <div class="prop-row">
+              <label class="prop-label">Jarak Antar Elemen – Gap Bawah (<span id="gapBottomVal">0</span>px)</label>
+              <div class="slider-number-row">
+                <input type="range" id="propGapBottomSlider" min="0" max="200" value="0" class="prop-range" oninput="
+                    document.getElementById('gapBottomVal').innerText = this.value;
+                    document.getElementById('propGapBottom').value = this.value;
+                    updateSelectedElementGapBottom(parseInt(this.value) || 0);
+                  " />
+                <input type="number" id="propGapBottom" min="0" max="200" value="0"
+                  class="prop-input-number prop-input-mini" oninput="
+                    const v = parseInt(this.value) || 0;
+                    document.getElementById('gapBottomVal').innerText = v;
+                    document.getElementById('propGapBottomSlider').value = Math.min(v, 200);
+                    updateSelectedElementGapBottom(v);
+                  " />
+              </div>
+            </div>
+
+            <div class="prop-row-split">
+              <div>
+                <label class="prop-label">Tinggi (<span id="heightVal">100</span>px / Auto)</label>
+                <div class="slider-number-row">
+                  <input type="range" id="propHeightSlider" min="10" max="800" value="100" class="prop-range" oninput="
+                      document.getElementById('heightVal').innerText = this.value;
+                      document.getElementById('propHeight').value = this.value;
+                      updateSelectedElementStyle('height', this.value + 'px');
+                    " />
+                  <input type="number" id="propHeight" min="10" max="5000" value="100"
+                    class="prop-input-number prop-input-mini" oninput="
+                      const v = parseInt(this.value) || 10;
+                      document.getElementById('heightVal').innerText = v;
+                      document.getElementById('propHeightSlider').value = Math.min(v, 800);
+                      updateSelectedElementStyle('height', v + 'px');
+                    " placeholder="px" />
+                  <button class="btn-auto-height" onclick="
+                      updateSelectedElementStyle('height', 'auto');
+                      document.getElementById('propHeight').value = '';
+                      document.getElementById('heightVal').innerText = 'Auto';
+                      document.getElementById('propHeightSlider').value = 10;
+                    ">
+                    Auto
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="prop-label">Z-Index (<span id="zIndexVal">1</span>)</label>
+                <div class="slider-number-row">
+                  <input type="range" id="propZIndexSlider" min="1" max="20" value="1" class="prop-range" oninput="
+                      document.getElementById('zIndexVal').innerText = this.value;
+                      document.getElementById('propZIndex').value = this.value;
+                      updateSelectedElementStyle('zIndex', this.value);
+                    " />
+                  <input type="number" id="propZIndex" min="1" max="20" value="1"
+                    class="prop-input-number prop-input-mini" oninput="
+                      const v = Math.min(Math.max(parseInt(this.value) || 1, 1), 20);
+                      document.getElementById('zIndexVal').innerText = v;
+                      document.getElementById('propZIndexSlider').value = v;
+                      updateSelectedElementStyle('zIndex', v);
+                    " />
+                </div>
+              </div>
+            </div>
+
+            <div class="prop-row-split">
+              <div>
+                <label class="prop-label">Penyelarasan (Alignment)</label>
+                <select id="propAlignment" onchange="updateSelectedElementAlignment(this.value)" class="prop-select">
+                  <option value="center" selected>Tengah (Center)</option>
+                  <option value="left">Kiri (Left)</option>
+                  <option value="right">Kanan (Right)</option>
+                  <option value="stretch">Regang (Stretch)</option>
+                </select>
+              </div>
+              <div>
+                <label class="prop-label">Padding Elemen (<span id="paddingVal">0</span>px)</label>
+                <input type="range" id="propPadding" min="0" max="100" value="0" oninput="
+                      document.getElementById('paddingVal').innerText = this.value;
+                      updateSelectedElementStyle('padding', this.value + 'px');
+                    " class="prop-range" />
+              </div>
+            </div>
+
+            <!-- ── STROKE SECTION (INTEGRATED) ────────────────────── -->
+            <div id="strokeCardSection" class="fs-section"
+              style="margin-top:12px; border-top: 1px solid #bddce7; padding-top: 12px;">
+              <div class="fs-section-header">
+                <span class="fs-title">Stroke (Garis Tepi)</span>
+                <button id="btnStrokeToggle" class="fs-eye-btn" onclick="toggleStrokeEnabled()" title="Toggle Stroke">
+                  <img src="/static/image/icon/show.svg" alt="Toggle Stroke" class="fs-eye-icon" width="24" height="24">
+                </button>
+              </div>
+
+              <div id="strokeBodyPanel" class="hidden">
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                  <!-- Minimalist trigger row in sidebar (Stroke) -->
+                  <div id="strokeTriggerBox" class="fill-trigger-box" onclick="toggleStrokePopover(event)"
+                    title="Klik untuk ubah warna / stroke">
+                    <div id="strokeTriggerSwatch" class="fill-trigger-swatch"></div>
+                    <span id="strokeTriggerHex" class="fill-trigger-hex">#38A0C4</span>
+                    <span id="strokeTriggerOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+
+                  <select id="propBorderStyle" onchange="onStrokeStyleChange(this.value)" class="prop-select-compact"
+                    title="Tipe Garis">
+                    <option value="solid">Garis Solid</option>
+                    <option value="dashed">Putus-Putus</option>
+                    <option value="dotted">Titik-Titik</option>
+                  </select>
+                </div>
+
+                <!-- Floating Popover Box for Stroke -->
+                <div id="strokePopoverBox" class="fill-popover-box hidden" onclick="event.stopPropagation()">
+                  <div class="fill-popover-header">
+                    <span class="fill-popover-title">Stroke / Warna Garis</span>
+                    <button type="button" class="fill-popover-close" onclick="closeStrokePopover()" title="Tutup">
+                      <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 14px; height: 14px;" />
+                    </button>
+                  </div>
+                  <div class="fill-type-row">
+                    <button class="fill-tab active" id="strokeTabSolid" onclick="setStrokeType('solid')">Solid</button>
+                    <button class="fill-tab" id="strokeTabLinear" onclick="setStrokeType('linear')">Linear</button>
+                    <button class="fill-tab" id="strokeTabRadial" onclick="setStrokeType('radial')">Radial</button>
+                  </div>
+                  <!-- Solid row -->
+                  <div id="solidStrokeRow" class="fs-color-row">
+                    <input type="color" id="strokeColorInput" class="fs-swatch-input"
+                      oninput="onStrokeSolidColor(this.value)" value="#38a0c4" title="Pilih warna stroke" />
+                    <input type="text" id="strokeHexInput" class="fs-hex-input" maxlength="6" placeholder="38a0c4"
+                      oninput="onStrokeHexText(this.value)" />
+                    <input type="number" id="strokeOpacityInput" class="fs-opacity-input" min="0" max="100" value="100"
+                      oninput="onStrokeOpacity(this.value); document.getElementById('strokeOpacitySlider').value=this.value;" />
+                    <span class="fs-percent">%</span>
+                  </div>
+                  <div id="solidStrokeOpacityRow" class="fs-slider-row">
+                    <input type="range" id="strokeOpacitySlider" min="0" max="100" value="100" class="prop-range"
+                      oninput="document.getElementById('strokeOpacityInput').value=this.value; onStrokeOpacity(this.value);" />
+                  </div>
+                  <!-- Gradient panel -->
+                  <div id="gradientStrokePanel" class="hidden">
+                    <div class="grad-preview-wrap">
+                      <div id="gradStrokePreviewBar" class="grad-preview-bar"></div>
+                    </div>
+                    <div id="gradStrokeAngleRow" class="fs-slider-row" style="margin-top:8px;">
+                      <label class="prop-label">Sudut (<span id="gradStrokeAngleLbl">135</span>°)</label>
+                      <div class="slider-number-row">
+                        <input type="range" id="gradStrokeAngleSlider" min="0" max="360" value="135" class="prop-range"
+                          oninput="document.getElementById('gradStrokeAngleLbl').innerText=this.value; document.getElementById('gradStrokeAngleInput').value=this.value; onStrokeGradientAngleChange(this.value);" />
+                        <input type="number" id="gradStrokeAngleInput" min="0" max="360" value="135"
+                          class="prop-input-number prop-input-mini"
+                          oninput="const v=((parseInt(this.value)||0)+360)%361; document.getElementById('gradStrokeAngleLbl').innerText=v; document.getElementById('gradStrokeAngleSlider').value=v; onStrokeGradientAngleChange(v);" />
+                      </div>
+                    </div>
+                    <div class="grad-stops-header">
+                      <span class="prop-label">Stops</span>
+                      <button class="fs-add-stop-btn" onclick="addStrokeGradientStop()" title="Tambah stop">+</button>
+                    </div>
+                    <div id="gradStrokeStopsList" class="grad-stops-list"></div>
+                  </div>
+                </div>
+
+                <div class="prop-row" style="margin-top:8px;">
+                  <label class="prop-label">Lebar Garis (<span id="strokeWeightLbl">1</span>px)</label>
+                  <div class="slider-number-row">
+                    <input type="range" id="strokeWeightSlider" min="1" max="20" value="1" class="prop-range"
+                      oninput="document.getElementById('strokeWeightLbl').innerText=this.value; document.getElementById('strokeWeightInput').value=this.value; onStrokeWeight(this.value);" />
+                    <input type="number" id="strokeWeightInput" min="1" max="100" value="1"
+                      class="prop-input-number prop-input-mini"
+                      oninput="const v=Math.max(1,parseInt(this.value)||1); document.getElementById('strokeWeightLbl').innerText=v; document.getElementById('strokeWeightSlider').value=Math.min(v,20); onStrokeWeight(v);" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GenUI Chatbot Component Settings -->
+          <div id="groupGenuiChatbot" class="prop-group hidden">
+            <!-- 1. IDENTITAS & PERSONA -->
+            <div class="prop-row">
+              <label class="prop-label" style="display: flex; align-items: center; gap: 6px;">
+                <img src="/static/image/icon/elemen-genui-chatbot.svg" alt="GenUI Chatbot"
+                  style="width: 18px; height: 18px;" /> Nama Chatbot / Asisten
+              </label>
+              <input type="text" id="propChatbotName" class="prop-input" value="AI Assistant"
+                oninput="updateChatbotConfig('botName', this.value)" placeholder="Contoh: AI CS Toko Kopi" />
+            </div>
+
+            <!-- Avatar Preview & Upload (Bot & User) -->
+            <div class="prop-row">
+              <label class="prop-label">Avatar / Logo Bot Chatbot</label>
+              <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+                <div id="chatbotAvatarPreview"
+                  style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #38a0c4; overflow: hidden; background: #f0f7f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                  <img id="chatbotAvatarImg" src="/static/image/icon/elemen-genui-chatbot.svg"
+                    style="width: 100%; height: 100%; object-fit: cover;" alt="Avatar" />
+                </div>
+                <div class="image-upload-wrapper" style="flex: 1;">
+                  <button class="btn-image-upload"
+                    style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+                    Foto Avatar Bot
+                  </button>
+                  <input type="file" id="propChatbotAvatarUpload" accept="image/*"
+                    onchange="uploadChatbotAvatar(event)" />
+                </div>
+              </div>
+              <span id="avatarUploadStatus"
+                style="font-size: 11px; color: #38a0c4; display: block; margin-top: 4px; font-weight: 600;"></span>
+            </div>
+
+            <!-- User Avatar Upload -->
+            <div class="prop-row">
+              <label class="prop-label">Avatar Foto User / Pengirim</label>
+              <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px;">
+                <div id="chatbotUserAvatarPreview"
+                  style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #0F4C75; overflow: hidden; background: #f0f7f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                  <img id="chatbotUserAvatarImg" src="/static/image/icon/elemen-testimoni.svg"
+                    style="width: 100%; height: 100%; object-fit: cover;" alt="User Avatar" />
+                </div>
+                <div class="image-upload-wrapper" style="flex: 1;">
+                  <button class="btn-image-upload"
+                    style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+                    Foto Avatar User
+                  </button>
+                  <input type="file" id="propChatbotUserAvatarUpload" accept="image/*"
+                    onchange="uploadChatbotUserAvatar(event)" />
+                </div>
+              </div>
+              <span id="userAvatarUploadStatus"
+                style="font-size: 11px; color: #0F4C75; display: block; margin-top: 4px; font-weight: 600;"></span>
+            </div>
+
+            <div class="prop-row">
+              <label class="prop-label">Instruksi Khusus System Prompt (Instruksi AI)</label>
+              <textarea id="propChatbotSystemPrompt" class="prop-textarea" style="min-height: 60px; font-size: 12px;"
+                oninput="updateChatbotConfig('systemPrompt', this.value)"
+                placeholder="Contoh: Anda adalah CS ramah. Jawab selalu dengan mengarahkan pengguna ke promo terbaru."></textarea>
+            </div>
+
+            <div class="prop-row">
+              <label class="prop-label">Pesan Menyapa Pertama (Welcome Message)</label>
+              <textarea id="propChatbotWelcome" class="prop-textarea" style="min-height: 50px;"
+                oninput="updateChatbotConfig('welcomeMsg', this.value)"
+                placeholder="Halo! Ada yang bisa saya bantu terkait produk kami?"></textarea>
+            </div>
+
+            <div class="prop-row">
+              <label class="prop-label">Gaya Bahasa (Tone of Voice)</label>
+              <select id="propChatbotTone" class="prop-select" onchange="updateChatbotConfig('tone', this.value)">
+                <option value="friendly">Ramah & Kasual (Halo kak...)</option>
+                <option value="formal">Profesional & Formal (Selamat datang...)</option>
+                <option value="direct">Singkat & Langsung (To The Point)</option>
+              </select>
+            </div>
+
+            <!-- 2. QUICK PROMPTS (CHIPS) & STYLING -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Tombol
+                Pertanyaan Cepat (Quick Chips)</span>
+
+              <div class="prop-row">
+                <input type="text" id="propChatbotChip1" class="prop-input" style="margin-bottom:6px; font-size:12px;"
+                  oninput="updateChatbotConfig('chip1', this.value)" placeholder="Chip 1: Berapa harga produk A?" />
+                <input type="text" id="propChatbotChip2" class="prop-input" style="margin-bottom:6px; font-size:12px;"
+                  oninput="updateChatbotConfig('chip2', this.value)" placeholder="Chip 2: Apakah ada lowongan kerja?" />
+                <input type="text" id="propChatbotChip3" class="prop-input" style="font-size:12px;"
+                  oninput="updateChatbotConfig('chip3', this.value)" placeholder="Chip 3: Di mana lokasi toko?" />
+              </div>
+
+              <!-- Posisi & Kelengkungan Chips -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div>
+                  <label class="prop-label">Posisi Quick Chips</label>
+                  <select id="propChatbotChipsPosition" class="prop-select"
+                    onchange="updateChatbotConfig('chipsPosition', this.value)">
+                    <option value="inside" selected>Di Dalam Chat (Inside)</option>
+                    <option value="above_input">Di Atas Input</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="prop-label">Kelengkungan (Radius)</label>
+                  <select id="propChatbotChipRadius" class="prop-select"
+                    onchange="updateChatbotConfig('chipRadius', this.value)">
+                    <option value="16px" selected>Kapsul (16px)</option>
+                    <option value="8px">Kotak (8px)</option>
+                    <option value="4px">Presisi (4px)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Design Warna Chips -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Background Chips</label>
+                  <div id="propChatbotChipBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatChipBgData', 'Warna Background Chips', 'propChatbotChipBgTrigger', 'propChatbotChipBgSwatch', 'propChatbotChipBgHex', 'propChatbotChipBgOpacity', event)"
+                    title="Klik untuk ubah warna background chips">
+                    <div id="propChatbotChipBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotChipBgHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propChatbotChipBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks Chips</label>
+                  <div id="propChatbotChipTextColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatChipTextColorData', 'Warna Teks Chips', 'propChatbotChipTextColorTrigger', 'propChatbotChipTextColorSwatch', 'propChatbotChipTextColorHex', 'propChatbotChipTextColorOpacity', event)"
+                    title="Klik untuk ubah warna teks chips">
+                    <div id="propChatbotChipTextColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotChipTextColorHex" class="fill-trigger-hex">#0F4C75</span>
+                    <span id="propChatbotChipTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="prop-row-split" style="gap: 8px; margin-top: 6px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Border Chips</label>
+                  <div id="propChatbotChipBorderColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatChipBorderColorData', 'Warna Border Chips', 'propChatbotChipBorderColorTrigger', 'propChatbotChipBorderColorSwatch', 'propChatbotChipBorderColorHex', 'propChatbotChipBorderColorOpacity', event)"
+                    title="Klik untuk ubah warna border chips">
+                    <div id="propChatbotChipBorderColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotChipBorderColorHex" class="fill-trigger-hex">#BDDCE7</span>
+                    <span id="propChatbotChipBorderColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+                <div></div>
+              </div>
+            </div>
+
+            <!-- 3. GENUI INTERACTIVE COMPONENTS -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Komponen
+                Interaktif GenUI & Bubble Avatar</span>
+
+              <label
+                style="display:flex; align-items:center; gap:8px; font-size:12px; color:#2c5d6b; margin-bottom:6px; cursor:pointer;">
+                <input type="checkbox" id="propChatbotShowBubbleAvatars" class="custom-checkbox"
+                  onchange="updateChatbotConfig('showBubbleAvatars', this.checked)" />
+                Tampilkan Foto Avatar di Samping Pesan Bubble
+              </label>
+
+              <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#2c5d6b; cursor:pointer;">
+                <input type="checkbox" id="propGenuiCustomContent" class="custom-checkbox"
+                  onchange="updateChatbotConfig('enableCustomContent', this.checked)" />
+                Tambah Konten / Elemen Kustom ke Chatbot
+              </label>
+            </div>
+
+            <!-- 4. RAG DATA & KNOWLEDGE -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Sumber
+                Data RAG (Dokumen Pengetahuan)</span>
+              <div class="image-upload-wrapper">
+                <button class="btn-image-upload"
+                  style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+                  Upload Dokumen RAG (PDF/CSV/TXT/XLSX)
+                </button>
+                <input type="file" id="propRagDocUpload" accept=".pdf,.txt,.docx,.json,.csv,.xlsx,.xls,.md"
+                  onchange="uploadRagDocument(event)" />
+              </div>
+              <span id="ragUploadStatus"
+                style="font-size: 11px; color: #38a0c4; display: block; margin-top: 4px; font-weight: 600;"></span>
+            </div>
+
+            <!-- 5. TAMPILAN & STYLING CUSTOMIZER -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Kustomisasi
+                Latar Belakang & Header Chat</span>
+
+              <!-- Toggle Header -->
+              <label
+                style="display:flex; align-items:center; gap:8px; font-size:12px; color:#2c5d6b; margin-bottom:10px; cursor:pointer;">
+                <input type="checkbox" id="propChatbotShowHeader" class="custom-checkbox"
+                  onchange="updateChatbotConfig('showHeader', this.checked)" checked />
+                Tampilkan Header Chatbot Bar
+              </label>
+
+              <!-- Header Alignment -->
+              <div class="prop-row">
+                <label class="prop-label">Penyelarasan Header (Alignment)</label>
+                <select id="propChatbotHeaderAlign" class="prop-select"
+                  onchange="updateChatbotConfig('headerAlign', this.value)">
+                  <option value="left" selected>Rata Kiri (Default Kiri)</option>
+                  <option value="center">Rata Tengah (Center)</option>
+                  <option value="right">Rata Kanan (Kanan)</option>
+                </select>
+              </div>
+
+              <!-- Header Colors -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Background Header</label>
+                  <div id="propChatbotHeaderBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatHeaderBgData', 'Warna Background Header', 'propChatbotHeaderBgTrigger', 'propChatbotHeaderBgSwatch', 'propChatbotHeaderBgHex', 'propChatbotHeaderBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial background header">
+                    <div id="propChatbotHeaderBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotHeaderBgHex" class="fill-trigger-hex">#38A0C4</span>
+                    <span id="propChatbotHeaderBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks Header</label>
+                  <div id="propChatbotHeaderTextColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatHeaderTextColorData', 'Warna Teks Header', 'propChatbotHeaderTextColorTrigger', 'propChatbotHeaderTextColorSwatch', 'propChatbotHeaderTextColorHex', 'propChatbotHeaderTextColorOpacity', event)"
+                    title="Klik untuk ubah warna teks header">
+                    <div id="propChatbotHeaderTextColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotHeaderTextColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propChatbotHeaderTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chat Body & Scrollbar Colors -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Latar Belakang Chat</label>
+                  <div id="propChatbotCardBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatCardBgData', 'Warna Latar Belakang Chat (Chat Body)', 'propChatbotCardBgTrigger', 'propChatbotCardBgSwatch', 'propChatbotCardBgHex', 'propChatbotCardBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial latar belakang chat">
+                    <div id="propChatbotCardBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotCardBgHex" class="fill-trigger-hex">#FAFCFD</span>
+                    <span id="propChatbotCardBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Scrollbar Chat</label>
+                  <div id="propChatbotScrollbarColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatScrollbarColorData', 'Warna Scrollbar Chat', 'propChatbotScrollbarColorTrigger', 'propChatbotScrollbarColorSwatch', 'propChatbotScrollbarColorHex', 'propChatbotScrollbarColorOpacity', event)"
+                    title="Klik untuk ubah warna scrollbar chat">
+                    <div id="propChatbotScrollbarColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotScrollbarColorHex" class="fill-trigger-hex">#BDDCE7</span>
+                    <span id="propChatbotScrollbarColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Upload Background Image / Wallpaper -->
+              <div class="prop-row">
+                <label class="prop-label">Gambar Latar Belakang / Wallpaper Chat</label>
+                <div class="image-upload-wrapper" style="margin-top: 4px;">
+                  <button class="btn-image-upload"
+                    style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;">
+                    Upload Gambar Wallpaper Chat
+                  </button>
+                  <input type="file" id="propChatbotBgImageUpload" accept="image/*"
+                    onchange="uploadChatbotBgImage(event)" />
+                </div>
+                <button type="button" onclick="clearChatbotBgImage()"
+                  style="margin-top: 4px; background: #fff0f0; border: 1px solid #ffcccc; color: #ff6b6b; padding: 6px 8px; border-radius: 6px; font-size: 11px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600;">
+                  <img src="/static/image/icon/delete.svg" style="width: 14px; height: 14px;" alt="Hapus" />
+                  Hapus Gambar Wallpaper
+                </button>
+                <span id="chatbotBgUploadStatus"
+                  style="font-size: 11px; color: #38a0c4; display: block; margin-top: 4px; font-weight: 600;"></span>
+              </div>
+            </div>
+
+            <!-- 6. DESAIN PESAN BUBBLE & TEKS -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Desain
+                Bubble Pesan & Teks</span>
+
+              <!-- Posisi Bubble Bot & User -->
+              <div class="prop-row-split" style="gap: 8px;">
+                <div>
+                  <label class="prop-label">Posisi Bubble Bot</label>
+                  <select id="propChatbotBotAlign" class="prop-select"
+                    onchange="updateChatbotConfig('botAlign', this.value)">
+                    <option value="flex-start" selected>Kiri (Default Bot)</option>
+                    <option value="flex-end">Kanan</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="prop-label">Posisi Bubble User</label>
+                  <select id="propChatbotUserAlign" class="prop-select"
+                    onchange="updateChatbotConfig('userAlign', this.value)">
+                    <option value="flex-end" selected>Kanan (Default User)</option>
+                    <option value="flex-start">Kiri</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Warna Bubble Bot -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Bubble Bot</label>
+                  <div id="propChatbotBotBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatBotBgData', 'Warna Bubble Bot', 'propChatbotBotBgTrigger', 'propChatbotBotBgSwatch', 'propChatbotBotBgHex', 'propChatbotBotBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial bubble bot">
+                    <div id="propChatbotBotBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotBotBgHex" class="fill-trigger-hex">#38A0C4</span>
+                    <span id="propChatbotBotBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks Pesan Bot</label>
+                  <div id="propChatbotBotTextColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatBotTextColorData', 'Warna Teks Pesan Bot', 'propChatbotBotTextColorTrigger', 'propChatbotBotTextColorSwatch', 'propChatbotBotTextColorHex', 'propChatbotBotTextColorOpacity', event)"
+                    title="Klik untuk ubah warna teks pesan bot">
+                    <div id="propChatbotBotTextColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotBotTextColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propChatbotBotTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Warna Bubble User -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Bubble User</label>
+                  <div id="propChatbotUserBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatUserBgData', 'Warna Bubble User', 'propChatbotUserBgTrigger', 'propChatbotUserBgSwatch', 'propChatbotUserBgHex', 'propChatbotUserBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial bubble user">
+                    <div id="propChatbotUserBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotUserBgHex" class="fill-trigger-hex">#0F4C75</span>
+                    <span id="propChatbotUserBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks Pesan User</label>
+                  <div id="propChatbotUserTextColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatUserTextColorData', 'Warna Teks Pesan User', 'propChatbotUserTextColorTrigger', 'propChatbotUserTextColorSwatch', 'propChatbotUserTextColorHex', 'propChatbotUserTextColorOpacity', event)"
+                    title="Klik untuk ubah warna teks pesan user">
+                    <div id="propChatbotUserTextColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotUserTextColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propChatbotUserTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="prop-row" style="margin-top: 8px;">
+                <label class="prop-label">Ukuran Font Chat</label>
+                <select id="propChatbotFontSize" class="prop-select"
+                  onchange="updateChatbotConfig('fontSize', this.value)">
+                  <option value="12px">Kecil (12px)</option>
+                  <option value="13px" selected>Sedang (13px)</option>
+                  <option value="14px">Besar (14px)</option>
+                  <option value="15px">Sangat Besar (15px)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 7. DESAIN AREA INPUT PESAN (TEXTAREA / INPUT BOX) -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Desain
+                Area Input Pesan (Input / Textarea)</span>
+
+              <!-- Toggle Background Container Bar (No Background / Transparan) -->
+              <label
+                style="display:flex; align-items:center; gap:8px; font-size:12px; color:#2c5d6b; margin-bottom:8px; cursor:pointer;">
+                <input type="checkbox" id="propChatbotInputContainerBgEnabled" class="custom-checkbox"
+                  onchange="updateChatbotConfig('inputContainerBgEnabled', this.checked)" />
+                Aktifkan Background Container Bar
+              </label>
+
+              <!-- Warna Background Container Bar -->
+              <div class="prop-row" id="propChatbotInputContainerBgRow">
+                <label class="prop-label">Warna Background Container Bar</label>
+                <div id="propChatbotInputContainerBgTrigger" class="fill-trigger-box"
+                  onclick="openFillPopoverForTarget('chatInputContainerBgData', 'Warna Background Container Bar', 'propChatbotInputContainerBgTrigger', 'propChatbotInputContainerBgSwatch', 'propChatbotInputContainerBgHex', 'propChatbotInputContainerBgOpacity', event)"
+                  title="Klik untuk ubah warna background container area input (solid/gradient)">
+                  <div id="propChatbotInputContainerBgSwatch" class="fill-trigger-swatch"></div>
+                  <span id="propChatbotInputContainerBgHex" class="fill-trigger-hex">#FFFFFF</span>
+                  <span id="propChatbotInputContainerBgOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+              </div>
+
+              <!-- Warna Background Kotak Input & Border Input -->
+              <div class="prop-row-split" id="propChatbotInputBgRow"
+                style="margin-top: 8px; border-top: 1px dashed #bddce7; padding-top: 8px; gap: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Background Input</label>
+                  <div id="propChatbotInputBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatInputBgData', 'Warna Background Input Box', 'propChatbotInputBgTrigger', 'propChatbotInputBgSwatch', 'propChatbotInputBgHex', 'propChatbotInputBgOpacity', event)"
+                    title="Klik untuk ubah warna background kotak input">
+                    <div id="propChatbotInputBgSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotInputBgHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propChatbotInputBgOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Border Input</label>
+                  <div id="propChatbotInputBorderColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatInputBorderColorData', 'Warna Border Input Box', 'propChatbotInputBorderColorTrigger', 'propChatbotInputBorderColorSwatch', 'propChatbotInputBorderColorHex', 'propChatbotInputBorderColorOpacity', event)"
+                    title="Klik untuk ubah warna border kotak input">
+                    <div id="propChatbotInputBorderColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotInputBorderColorHex" class="fill-trigger-hex">#BDDCE7</span>
+                    <span id="propChatbotInputBorderColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Warna Teks Input & Kelengkungan Input -->
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks Input</label>
+                  <div id="propChatbotInputTextColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatInputTextColorData', 'Warna Teks Input Box', 'propChatbotInputTextColorTrigger', 'propChatbotInputTextColorSwatch', 'propChatbotInputTextColorHex', 'propChatbotInputTextColorOpacity', event)"
+                    title="Klik untuk ubah warna teks kotak input">
+                    <div id="propChatbotInputTextColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotInputTextColorHex" class="fill-trigger-hex">#2C5D6B</span>
+                    <span id="propChatbotInputTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="prop-label" style="font-size: 10px; margin-bottom: 4px;">Kelengkungan Input</label>
+                  <select id="propChatbotInputRadius" class="prop-select"
+                    onchange="updateChatbotConfig('inputBorderRadius', this.value)">
+                    <option value="6px">Kotak (6px)</option>
+                    <option value="12px" selected>Sedang (12px)</option>
+                    <option value="24px">Kapsul (24px)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="prop-row" style="margin-top: 8px;">
+                <label class="prop-label">Teks Placeholder Input</label>
+                <input type="text" id="propChatbotPlaceholder" class="prop-input" value="Ketik pertanyaan RAG..."
+                  oninput="updateChatbotConfig('placeholderText', this.value)" placeholder="Placeholder..." />
+              </div>
+
+              <!-- PENGATURAN TOMBOL KIRIM (Teks & Mode Icon/Teks) -->
+              <div class="prop-row" style="margin-top: 10px; border-top: 1px dashed #bddce7; padding-top: 8px;">
+                <label class="prop-label" style="font-weight: 700; color: #2c5d6b; margin-bottom: 4px;">Kustomisasi
+                  Tombol Kirim</label>
+
+                <div class="prop-row-split" style="gap: 8px; margin-top: 4px;">
+                  <div>
+                    <label class="prop-label" style="font-size: 11px;">Tipe Tombol Kirim</label>
+                    <select id="propChatbotSendBtnMode" class="prop-select"
+                      onchange="updateChatbotConfig('sendBtnMode', this.value)">
+                      <option value="icon_text" selected>Icon + Teks</option>
+                      <option value="icon_only">Hanya Icon SVG</option>
+                      <option value="text_only">Hanya Teks</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="prop-label" style="font-size: 11px;">Teks Tombol Kirim</label>
+                    <input type="text" id="propChatbotSendBtnText" class="prop-input" value="Kirim"
+                      oninput="updateChatbotConfig('sendBtnText', this.value)"
+                      placeholder="Contoh: Kirim, Send, Tanya..." />
+                  </div>
+                </div>
+              </div>
+
+              <div class="prop-row-split" style="gap: 8px; margin-top: 8px;">
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Tombol Kirim</label>
+                  <div id="propChatbotSendBtnBgTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatSendBtnBgData', 'Warna Tombol Kirim', 'propChatbotSendBtnBgTrigger', 'propChatbotSendBtnBgSwatch', 'propChatbotSendBtnBgHex', 'propChatbotSendBtnBgOpacity', event)"
+                    title="Klik untuk ubah warna solid / linear / radial tombol kirim">
+                  <div id="propChatbotSendBtnBgSwatch" class="fill-trigger-swatch"></div>
+                  <span id="propChatbotSendBtnBgHex" class="fill-trigger-hex">#38A0C4</span>
+                  <span id="propChatbotSendBtnBgOpacity" class="fill-trigger-opacity">100%</span>
+                </div>
+              </div>
+
+                <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                  <label class="prop-label" style="font-weight: 500; font-size: 10px; margin-bottom: 4px;">Warna Teks / Icon Kirim</label>
+                  <div id="propChatbotSendBtnTextColorTrigger" class="fill-trigger-box"
+                    onclick="openFillPopoverForTarget('chatSendBtnTextColorData', 'Warna Teks / Icon Tombol Kirim', 'propChatbotSendBtnTextColorTrigger', 'propChatbotSendBtnTextColorSwatch', 'propChatbotSendBtnTextColorHex', 'propChatbotSendBtnTextColorOpacity', event)"
+                    title="Klik untuk ubah warna teks / icon tombol kirim">
+                    <div id="propChatbotSendBtnTextColorSwatch" class="fill-trigger-swatch"></div>
+                    <span id="propChatbotSendBtnTextColorHex" class="fill-trigger-hex">#FFFFFF</span>
+                    <span id="propChatbotSendBtnTextColorOpacity" class="fill-trigger-opacity">100%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 8. PARAMETER MODEL AI -->
+            <div class="fs-section" style="margin-top:10px; border-top: 1px solid #bddce7; padding-top: 10px;">
+              <span class="fs-title"
+                style="font-weight: 700; color: #2c5d6b; font-size: 12px; display: block; margin-bottom: 6px;">Parameter
+                AI</span>
+              <div class="prop-row">
+                <label class="prop-label">Kreativitas Jawaban AI (Temperature: <span
+                    id="propChatbotTempVal">0.7</span>)</label>
+                <input type="range" id="propChatbotTemperature" min="0" max="1" step="0.1" value="0.7"
+                  class="prop-range"
+                  oninput="updateChatbotConfig('temperature', parseFloat(this.value)); document.getElementById('propChatbotTempVal').innerText=this.value;" />
+              </div>
+            </div>
+
+            <div class="prop-row">
+              <label class="prop-label">Panjang Maksimal Jawaban (Max Tokens)</label>
+              <select id="propChatbotMaxTokens" class="prop-select"
+                onchange="updateChatbotConfig('maxTokens', parseInt(this.value))">
+                <option value="512">Singkat (512 tokens)</option>
+                <option value="1024" selected>Sedang (1024 tokens)</option>
+                <option value="2048">Panjang (2048 tokens)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="drawer-actions" id="drawerActions">
+          <button class="btn-drawer-delete" onclick="deleteSelectedElement()">
+            <img src="/static/image/icon/delete.svg" style="width: 20px; height: 20px;" alt="Hapus">
+            Hapus Komponen Ini
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layers Panel Sidebar (Admin Only - Slides in from left) -->
+    <div id="layersPanel" class="layers-panel hidden">
+      <div class="layers-header">
+        <span class="layers-title">Sistem Layer</span>
+        <div class="layers-header-right" style="display: flex; align-items: center; gap: 6px;">
+          <button id="btnTogglePublishMode" class="btn-layer-publish" onclick="togglePublishMode()"
+            title="Publish Template Blok ke UI Kit">
+            Publish
+          </button>
+          <button class="layers-close" onclick="toggleLayersPanel()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+      </div>
+      <div class="layers-content" id="layersContent">
+        <!-- Rendered layers tree goes here -->
+      </div>
+      <!-- Publish Action Bottom Bar (Visible when in Publish Mode) -->
+      <div id="layersPublishFooter" class="layers-publish-footer hidden">
+        <div class="layers-publish-info">
+          <span id="publishSelectedCount">0</span> komponen dipilih
+        </div>
+        <div class="layers-publish-btns">
+          <button type="button" class="btn-publish-cancel" onclick="exitPublishMode()">Batal</button>
+          <button type="button" id="btnOpenPublishModal" class="btn-publish-submit" onclick="openPublishModal()"
+            disabled>Lanjut Publish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Background Remover Modal -->
+    <div id="rembgModal" class="modal-overlay hidden"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 20050; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+      <div class="modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #8d98e0; font-family: system-ui, sans-serif;">
+        <div class="modal-header"
+          style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <h3 style="margin: 0; font-size: 18px; color: #2c5d6b; font-weight: 700;">Hapus Latar Gambar</h3>
+          <button class="close-btn" onclick="closeRembgModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+        <div class="modal-body"
+          style="padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+          <!-- Loading state -->
+          <div id="rembgLoadingState" class="hidden"
+            style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; padding: 40px 20px; gap: 16px;">
+            <div class="loader-spinner"></div>
+            <span style="font-size: 14px; color: #555; font-weight: 600; text-align: center;">Memproses gambar
+              menggunakan AI rembg...</span>
+          </div>
+          <!-- Editor state -->
+          <div id="rembgEditorState" style="display: flex; flex-direction: column; gap: 12px; flex: 1; height: 100%;">
+            <div class="editor-toolbar"
+              style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: #f5f9fa; padding: 8px 12px; border-radius: 8px; border: 1px solid #e2edf0;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="btnRembgErase" class="btn-toolbar-tool active" onclick="setRembgTool('erase')"
+                  style="padding: 6px 12px; border-radius: 6px; border: 1px solid #38a0c4; background: #38a0c4; color: white; font-weight: 600; cursor: pointer; font-size: 13px;">✕
+                  Kuas Hapus</button>
+                <button id="btnRembgRestore" class="btn-toolbar-tool" onclick="setRembgTool('restore')"
+                  style="padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc; background: white; color: #333; font-weight: 600; cursor: pointer; font-size: 13px;">✔
+                  Kuas Pulihkan</button>
+              </div>
+              <div
+                style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: #2c5d6b;">
+                <span>Ukuran Kuas:</span>
+                <input type="range" id="rembgBrushSize" min="5" max="100" value="20" class="prop-range"
+                  oninput="document.getElementById('rembgBrushSizeVal').innerText = this.value"
+                  style="width: 120px; margin: 0;" />
+                <span id="rembgBrushSizeVal"
+                  style="background: #e6f4f8; color: #38a0c4; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; min-width: 22px; text-align: center;">20</span><span
+                  style="font-size: 11px; color: #7a8a94; margin-left: -4px;">px</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button onclick="undoRembgBrush()" title="Undo Kuas"
+                  style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer;">
+                  <img src="/static/image/icon/undo.svg" alt="Undo" style="width: 16px; height: 16px;" />
+                </button>
+                <button onclick="redoRembgBrush()" title="Redo Kuas"
+                  style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer;">
+                  <img src="/static/image/icon/redo.svg" alt="Redo" style="width: 16px; height: 16px;" />
+                </button>
+                <button onclick="resetRembgBrush()"
+                  style="padding: 6px 10px; border-radius: 6px; border: 1px solid #f8d7da; background: #f8d7da; color: #721c24; cursor: pointer; font-size: 12px; font-weight: bold;">Reset</button>
+              </div>
+            </div>
+            <!-- Canvas container wrapper with vertical scrolling and no height capping for canvas -->
+            <div
+              style="display: block; text-align: center; background: #eef2f5; border-radius: 8px; border: 1px dashed #ccc; padding: 20px; overflow: auto; max-height: 55vh; width: 100%; box-sizing: border-box;">
+              <canvas id="rembgCanvas"
+                style="display: inline-block; max-width: 100%; height: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: crosshair; background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px; background-color: #eee;"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer"
+          style="padding: 16px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; background: #fdfdfd;">
+          <button onclick="closeRembgModal()"
+            style="padding: 8px 18px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 13px; font-weight: 600; cursor: pointer; color: #555;">Batal</button>
+          <button id="btnRembgApply" onclick="applyRembgResult()"
+            style="padding: 8px 18px; border-radius: 8px; border: none; background: #38a0c4; color: white; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(56,160,196,0.3);">Terapkan
+            Hasil</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Background Cropper / Resizer Modal -->
+    <div id="bgCropModal" class="modal-overlay hidden"
+      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 20050; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+      <div class="modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #8d98e0; font-family: system-ui, sans-serif;">
+        <div class="modal-header"
+          style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <h3 style="margin: 0; font-size: 18px; color: #2c5d6b; font-weight: 700;">Resize & Crop Gambar Latar</h3>
+          <button class="close-btn" onclick="closeBgCropModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+        <div class="modal-body"
+          style="padding: 20px; flex: 1; overflow: auto; background: #eef2f5; max-height: 55vh; width: 100%; box-sizing: border-box; text-align: center; display: block;">
+          <div style="position: relative; display: inline-block; max-width: 100%;">
+            <canvas id="bgCropCanvas"
+              style="box-shadow: 0 4px 10px rgba(0,0,0,0.15); cursor: crosshair; max-width: 100%; height: auto; display: block;"></canvas>
+          </div>
+        </div>
+        <div class="modal-footer"
+          style="padding: 16px 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <span style="font-size: 11px; color: #666; font-style: italic;">Geser kotak crop. Tarik sudut kotak untuk
+            meresize area crop.</span>
+          <div style="display: flex; gap: 10px;">
+            <button onclick="closeBgCropModal()"
+              style="padding: 8px 18px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 13px; font-weight: 600; cursor: pointer; color: #555;">Batal</button>
+            <button onclick="applyBgCrop()"
+              style="padding: 8px 18px; border-radius: 8px; border: none; background: #38a0c4; color: white; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(56,160,196,0.3);">Potong
+              & Terapkan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Element Image Cropper / Resizer Modal -->
+    <div id="elementImageCropModal" class="modal-overlay hidden"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 20060; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #8d98e0; font-family: system-ui, sans-serif;">
+        <div class="modal-header"
+          style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; flex-shrink: 0;">
+          <h3
+            style="margin: 0; font-size: 16px; color: #2c5d6b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/icon/crop.svg" alt="Crop & Sesuaikan Gambar" style="width: 28px; height: 28px;" />
+            Crop & Sesuaikan Gambar
+          </h3>
+          <button class="close-btn" onclick="closeElementImageCropModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+
+        <!-- Toolbar Preset Aspek Rasio -->
+        <div
+          style="padding: 8px 16px; background: #ffffff; border-bottom: 1px solid #edf2f6; display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; flex-shrink: 0;">
+          <span style="font-size: 11px; font-weight: 700; color: #7a8a94;">Aspek Rasio:</span>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;" id="elemCropRatioGroup">
+            <button type="button" class="elem-crop-ratio-btn active" data-ratio="free"
+              onclick="setElemCropRatio('free', this)">Bebas</button>
+            <button type="button" class="elem-crop-ratio-btn" data-ratio="1:1"
+              onclick="setElemCropRatio('1:1', this)">1:1</button>
+            <button type="button" class="elem-crop-ratio-btn" data-ratio="4:3"
+              onclick="setElemCropRatio('4:3', this)">4:3</button>
+            <button type="button" class="elem-crop-ratio-btn" data-ratio="16:9"
+              onclick="setElemCropRatio('16:9', this)">16:9</button>
+            <button type="button" class="elem-crop-ratio-btn" data-ratio="9:16"
+              onclick="setElemCropRatio('9:16', this)">9:16</button>
+          </div>
+        </div>
+
+        <div class="modal-body"
+          style="padding: 16px; flex: 1; overflow: auto; background: #1a2228; width: 100%; box-sizing: border-box; text-align: center; display: flex; align-items: center; justify-content: center;">
+          <div style="position: relative; display: inline-block; max-width: 100%;">
+            <canvas id="elemImageCropCanvas"
+              style="box-shadow: 0 6px 18px rgba(0,0,0,0.3); cursor: crosshair; max-width: 100%; height: auto; display: block; border-radius: 4px;"></canvas>
+          </div>
+        </div>
+
+        <div class="modal-footer"
+          style="padding: 14px 20px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; flex-shrink: 0;">
+          <span style="font-size: 11px; color: #7a8a94; font-style: italic;">Geser & atur bingkai crop.</span>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="closeElementImageCropModal()"
+              style="padding: 7px 16px; border-radius: 8px; border: 1px solid #d0dbe2; background: #ffffff; font-size: 12px; font-weight: 600; cursor: pointer; color: #5a6a74;">Batal</button>
+            <button type="button" onclick="applyElementImageCrop()"
+              style="padding: 7px 18px; border-radius: 8px; border: none; background: #38a0c4; color: white; font-size: 12px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(56,160,196,0.35);">Potong
+              & Terapkan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Delete Element Confirmation Modal (Sesuai Desain Modal Aplikasi Utama) -->
+    <div class="delete-confirm-overlay hidden" id="deleteElementModal">
+      <div class="delete-confirm-modal">
+        <div class="delete-confirm-icon">
+          <img src="/static/image/icon/delete.svg" class="delete-confirm-svg" alt="Delete" />
+        </div>
+        <div class="delete-confirm-title">Hapus Komponen?</div>
+        <div class="delete-confirm-desc">
+          Komponen ini akan dihapus dari desain halaman secara permanen dan tidak bisa dikembalikan.
+        </div>
+        <div class="delete-confirm-actions">
+          <button class="btn-confirm no" onclick="cancelDeleteElement()">Batal</button>
+          <button class="btn-confirm yes" onclick="confirmDeleteElement()">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promo Text Generator Modal -->
+    <div id="aiAssistModal" class="modal-overlay hidden"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 20100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="ai-modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #8d98e0; font-family: system-ui, sans-serif;">
+
+        <!-- Modal Header -->
+        <div class="ai-modal-header"
+          style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; flex-shrink: 0;">
+          <h3
+            style="margin: 0; font-size: 16px; color: #2c5d6b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/icon/ai-assist.svg" alt="Promo Text Generator"
+              style="width: 28px; height: 28px;" />
+            Promo Text Generator
+          </h3>
+          <button type="button" class="close-btn" onclick="closeAIAssistModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="ai-modal-body"
+          style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex: 1; background: #fafcfd;">
+          <div>
+            <label
+              style="display: flex; align-items: center; gap: 8px; color: #2c5d6b; font-weight: 700; font-size: 13px; margin-bottom: 8px;">
+              <img src="/static/image/icon/edit_tool.svg" alt="Edit" style="width: 20px; height: 20px;" />
+              Data Usaha / Instruksi:
+            </label>
+
+            <!-- Active Target Regenerate Badge (Muncul saat user memilih generate ulang teks tertentu) -->
+            <div id="aiRegenerateBadge" class="hidden"
+              style="margin-bottom: 8px; background: #e0f2fe; border: 1.5px solid #bddce7; border-radius: 8px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #206f8a;">
+              <div style="display: flex; align-items: center; gap: 6px; overflow: hidden;">
+                <span style="font-weight: 700; flex-shrink: 0;">Fokus Teks:</span>
+                <span id="aiRegeneratePreviewText"
+                  style="color: #2c5d6b; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;"></span>
+              </div>
+              <button type="button" onclick="clearAiRegenerateFocus()" title="Batal"
+                style="background: none; border: none; cursor: pointer; padding: 2px; display: flex; align-items: center;">
+                <img src="/static/image/icon/close.svg" alt="Batal" style="width: 12px; height: 12px;" />
+              </button>
+            </div>
+
+            <textarea id="modalPropAiPrompt" rows="4"
+              style="width: 100%; box-sizing: border-box; background: #ffffff; border: 1.5px solid #bddce7; border-radius: 12px; padding: 10px 12px; font-size: 13px; line-height: 1.5; color: #333; resize: vertical;"
+              placeholder="Masukkan data usaha seadanya... (contoh: Ibu Jumliah jualan sayur bayam Rp 3.000, kangkung, tempe, tahu. Buka jam 6 pagi, segar dipetik subuh, depan gang melati)"></textarea>
+          </div>
+
+          <div>
+            <button onclick="askAICopywriter(); return false;"
+              style="background: #38a0c4; color: white; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; border-radius: 8px; padding: 9px 18px; font-size: 13px; box-shadow: 0 2px 6px rgba(56,160,196,0.3); width: fit-content; align-self: flex-start; transition: all 0.2s ease;">
+              <span id="aiAssistBtnText">Hasilkan Teks Promosi</span>
+              <div id="aiAssistSpinner" class="loader-spinner hidden"
+                style="width: 14px; height: 14px; border-width: 2px;"></div>
+            </button>
+          </div>
+
+          <!-- AI Suggestions Area -->
+          <div id="aiSuggestionsArea" class="hidden"
+            style="margin-top: 6px; border-top: 1px dashed #bddce7; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #7a8a94;">
+              <img src="/static/image/icon/ai-assist.svg" alt="AI" style="width: 20px; height: 20px; flex-shrink: 0;" />
+              <span>Seleksi bagian teks yang ingin digunakan, lalu klik tombol terapkan.</span>
+            </div>
+
+            <div id="aiSuggestionsContent"
+              style="background: #f8fafc; border: 1px solid #bddce7; border-radius: 10px; padding: 12px; font-size: 12.5px; color: #2c3e50; max-height: 190px; overflow-y: auto; text-align: left; line-height: 1.6; white-space: pre-wrap; font-family: system-ui, -apple-system, sans-serif; user-select: text;">
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 2px;">
+              <button onclick="applyAiSuggestion();"
+                style="flex: 1; background: #38a0c4; color: white; border: none; border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: 12px; cursor: pointer; box-shadow: 0 2px 6px rgba(56,160,196,0.3); text-align: center; white-space: nowrap;">
+                Terapkan ke Komponen
+              </button>
+              <button onclick="setAiRegenerateFocus();"
+                style="flex: 1; background: #f0f4f7; color: #2c5d6b; border: 1px solid #bddce7; border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: 12px; cursor: pointer; text-align: center; white-space: nowrap;">
+                Generate Ulang
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Publish UI Kit Confirmation Modal (Sesuai Desain Modal Konfirmasi Aplikasi Utama) -->
+    <div class="delete-confirm-overlay hidden" id="publishConfirmModal" style="z-index: 20200;">
+      <div class="delete-confirm-modal"
+        style="max-width: 320px; text-align: left; padding: 22px 20px; border-color: #38a0c4;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <div
+            style="width: 38px; height: 38px; border-radius: 10px; background: #e0f2fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img src="/static/image/icon/ui-kit.svg" style="width: 22px; height: 22px;" alt="UI Kit" />
+          </div>
+          <div>
+            <div class="delete-confirm-title"
+              style="margin-bottom: 2px; font-size: 15px; text-align: left; color: #2c5d6b;">Publish ke UI Kit</div>
+            <div style="font-size: 11px; color: #7a8a94;">Simpan sebagai template blok UI Kit</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #2c5d6b; display: block; margin-bottom: 4px;">Nama
+              Project / Template:</label>
+            <input type="text" id="inputPublishName" class="edit-profile-input" placeholder="Contoh: Hero Banner Promo"
+              style="width: 100%; padding: 8px 10px; font-size: 12px; border-radius: 8px; border: 1.5px solid #bddce7; box-sizing: border-box; outline: none;" />
+          </div>
+
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #2c5d6b; display: block; margin-bottom: 4px;">Pilih
+              Tag Kategori:</label>
+            <div id="publishTagChips" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;">
+              <!-- Tag selection chips -->
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="text" id="inputPublishCustomTag" placeholder="+ Ketik tag baru..."
+                style="flex: 1; padding: 6px 8px; font-size: 11px; border-radius: 6px; border: 1px solid #bddce7; outline: none; background: #fff;" />
+              <button type="button" onclick="addCustomPublishTag()"
+                style="background: #38a0c4; color: white; border: none; border-radius: 6px; padding: 6px 10px; font-size: 11px; font-weight: 600; cursor: pointer;">Tambah</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="delete-confirm-actions" style="margin-top: 8px;">
+          <button class="btn-confirm no" onclick="closePublishModal()"
+            style="font-size: 12px; padding: 8px 14px;">Batal</button>
+          <button class="btn-confirm yes" id="btnSubmitPublish" onclick="submitPublishTemplate()"
+            style="background: #38a0c4; font-size: 12px; padding: 8px 14px;">Publish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Kit Delete Template/Tag Confirmation Modal (Sesuai Desain Modal Aplikasi Utama) -->
+    <div class="delete-confirm-overlay hidden" id="uikitDeleteConfirmModal" style="z-index: 20300;">
+      <div class="delete-confirm-modal">
+        <div class="delete-confirm-icon">
+          <img src="/static/image/icon/delete.svg" class="delete-confirm-svg" alt="Delete" />
+        </div>
+        <div class="delete-confirm-title" id="uikitDeleteConfirmTitle">Hapus Template?</div>
+        <div class="delete-confirm-desc" id="uikitDeleteConfirmDesc">
+          Template ini akan dihapus dari koleksi UI Kit secara permanen dan tidak bisa dikembalikan.
+        </div>
+        <div class="delete-confirm-actions">
+          <button type="button" class="btn-confirm no" onclick="closeUIKitDeleteConfirm()">Batal</button>
+          <button type="button" class="btn-confirm yes" id="btnConfirmUIKitDelete"
+            onclick="executeUIKitDelete()">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- UI Kit Block Templates Modal (Consistent Sizing & Styling) -->
+    <div id="uiKitModal" class="modal-overlay hidden"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 20100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="ai-modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #38a0c4; font-family: system-ui, sans-serif;">
+
+        <!-- Modal Header -->
+        <div class="ai-modal-header" style="flex-shrink: 0;">
+          <h3 style="display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/icon/ui-kit.svg" alt="UI Kit" style="width: 28px; height: 28px;" />
+            UI Kit Block Templates
+          </h3>
+          <button class="close-btn" onclick="closeUIKitModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+
+        <!-- Sticky Search & Tag Filter Top Bar (Never squished/shrunk) -->
+        <div class="uikit-modal-top-bar">
+          <!-- 1. Search Bar (Desain Mirip map.html .topbar-search) -->
+          <div class="uikit-search-box">
+            <input type="text" id="uikitSearchInput" placeholder="Cari template UI Kit..."
+              oninput="filterUIKitTemplates()" />
+            <button type="button" class="btn-search" onclick="filterUIKitTemplates()">Cari</button>
+          </div>
+
+          <!-- 2. Tag Filter Pills -->
+          <div id="uikitTagFilterContainer" class="uikit-tag-filter">
+            <!-- Rendered Tag pills (Semua, Hero, Katalog, Form, etc.) via JS -->
+          </div>
+        </div>
+
+        <!-- Modal Body / Scrollable Templates Area -->
+        <div class="ai-modal-body"
+          style="padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; min-height: 0; background: #fafcfd;">
+          <!-- 3. Templates Grid/List (Visual Cards sesuai contoh gambar) -->
+          <div id="uikitTemplatesList" class="uikit-templates-list">
+            <!-- Rendered UI Kit Cards via JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Shape & Curve Editor Modal (Consistent Sizing & Styling Inside .app) -->
+    <div id="shapeEditorModal" class="modal-overlay hidden"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 20100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="ai-modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #38a0c4; font-family: system-ui, sans-serif;">
+
+        <!-- Modal Header -->
+        <div class="ai-modal-header"
+          style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <h3
+            style="margin: 0; font-size: 16px; color: #2c5d6b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/icon/shape-tool.svg" alt="Shape" style="width: 28px; height: 28px;" />
+            Shape Editor
+          </h3>
+          <button type="button" class="close-btn" onclick="closeShapeEditorModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+
+        <!-- Tab Bar -->
+        <div style="display: flex; border-bottom: 1px solid #eef2f4; background: #f8fafc;">
+          <button type="button" id="shapeTabPreset" class="shape-tab active" onclick="selectShapeTab('preset')"
+            style="flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 12px; color: #2c5d6b; cursor: pointer; border-bottom: 2px solid #38a0c4;">
+            Preset Shape
+          </button>
+          <button type="button" id="shapeTabDraw" class="shape-tab" onclick="selectShapeTab('draw')"
+            style="flex: 1; padding: 10px; border: none; background: none; font-weight: 700; font-size: 12px; color: #7a8a94; cursor: pointer;">
+            Gambar Kurva Melengkung
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="ai-modal-body"
+          style="padding: 14px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
+
+          <!-- Tab 1: Preset Shape -->
+          <div id="shapeBodyPreset" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-size: 11px; color: #7a8a94; font-style: italic;">
+              Pilih bentuk preset unik di bawah ini untuk memotong elemen Box atau Gambar:
+            </div>
+            <div id="shapePresetGrid"
+              style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-height: 320px; overflow-y: auto; padding: 4px;">
+              <!-- Cards rendered dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Tab 2: Interactive Draw Smooth Curve Canvas -->
+          <div id="shapeBodyDraw" class="hidden" style="display: flex; flex-direction: column; gap: 10px; flex: 1;">
+            <div style="font-size: 11px; color: #7a8a94; font-style: italic;">
+              Klik pada kanvas di bawah untuk membuat titik sudut, atau geser titik yang ada untuk membentuk pola
+              melengkung mulus:
+            </div>
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; gap: 6px; background: #f0f7f9; padding: 6px 10px; border-radius: 8px; border: 1px solid #bddce7;">
+              <button type="button" id="btnToggleSmoothCurve" class="btn-toolbar-tool active"
+                onclick="toggleSmoothCurveMode()"
+                style="padding: 4px 8px; border-radius: 6px; border: 1px solid #38a0c4; background: #38a0c4; color: white; font-weight: 600; cursor: pointer; font-size: 11px;">
+                ~ Kurva Mulus
+              </button>
+              <div style="display: flex; gap: 4px;">
+                <button type="button" onclick="undoDrawPoint()" title="Undo Titik"
+                  style="display: flex; align-items: center; justify-content: center; padding: 4px 8px; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer;">
+                  <img src="/static/image/icon/undo.svg" alt="Undo" style="width: 13px; height: 13px;" />
+                </button>
+                <button type="button" onclick="redoDrawPoint()" title="Redo Titik"
+                  style="display: flex; align-items: center; justify-content: center; padding: 4px 8px; border-radius: 6px; border: 1px solid #ccc; background: white; cursor: pointer;">
+                  <img src="/static/image/icon/redo.svg" alt="Redo" style="width: 13px; height: 13px;" />
+                </button>
+                <button type="button" onclick="resetDrawPoints()"
+                  style="padding: 4px 8px; border-radius: 6px; border: 1px solid #ffc1bd; background: #ffebe9; color: #ff6b6b; cursor: pointer; font-size: 11px; font-weight: bold;">Reset</button>
+              </div>
+            </div>
+
+            <!-- Vector Drawing Canvas -->
+            <div
+              style="position: relative; width: 100%; height: 220px; background: #fafcfd; border-radius: 12px; border: 1.5px dashed #38a0c4; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+              <canvas id="shapeDrawCanvas"
+                style="width: 100%; height: 100%; cursor: crosshair; display: block;"></canvas>
+            </div>
+          </div>
+
+          <!-- Preview Box Area -->
+          <div
+            style="margin-top: auto; padding-top: 10px; border-top: 1px dashed #bddce7; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="font-size: 11px; color: #2c5d6b; font-weight: 700;">Pratinjau Shape:</div>
+            <div
+              style="width: 80px; height: 50px; background: #eef2f5; border: 1px dashed #ccc; border-radius: 6px; display: flex; align-items: center; justify-content: center;">
+              <div id="shapeLivePreview"
+                style="width: 70px; height: 42px; background: linear-gradient(135deg, #38a0c4, #8d98e0); transition: all 0.2s ease;">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer"
+          style="padding: 12px 16px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <button type="button" onclick="closeShapeEditorModal()"
+            style="padding: 8px 16px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 12px; font-weight: 600; cursor: pointer; color: #555;">Batal</button>
+          <button type="button" onclick="applySelectedShape()"
+            style="padding: 8px 18px; border-radius: 8px; border: none; background: #38a0c4; color: white; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(56,160,196,0.3);">Terapkan
+            Shape</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Text Animation Tool Modal (Consistent Sizing & Styling) -->
+    <div id="textAnimationModal" class="modal-overlay hidden"
+      style="position: absolute; inset: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); z-index: 20100; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+      <div class="ai-modal-card"
+        style="background: white; border-radius: 28px; width: 92%; max-width: 380px; height: 82%; max-height: 580px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 2px solid #38a0c4; font-family: system-ui, sans-serif;">
+
+        <!-- Modal Header -->
+        <div class="ai-modal-header"
+          style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <h3
+            style="margin: 0; font-size: 16px; color: #2c5d6b; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/icon/text-animation.svg" alt="Text Animation" style="width: 28px; height: 28px;" />
+            Text Animation
+          </h3>
+          <button type="button" class="close-btn" onclick="closeTextAnimationModal()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+
+        <!-- Live Preview Area -->
+        <div
+          style="padding: 14px 20px; background: #f0f7f9; border-bottom: 1px solid #bddce7; display: flex; flex-direction: column; gap: 6px;">
+          <div
+            style="font-size: 11px; font-weight: 700; color: #38a0c4; text-transform: uppercase; letter-spacing: 0.5px;">
+            Pratinjau Live (Real-Time Preview)</div>
+          <div
+            style="width: 100%; min-height: 60px; max-height: 90px; background: #ffffff; border-radius: 12px; border: 1.5px dashed #38a0c4; padding: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box;">
+            <div id="textAnimPreviewContent"
+              style="font-size: 16px; font-weight: 700; color: #2c5d6b; text-align: center; width: 100%;">Contoh Teks
+              Promo</div>
+          </div>
+        </div>
+
+        <!-- Modal Body (Speed & Preset Selector Grid) -->
+        <div class="ai-modal-body"
+          style="padding: 14px 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+          <!-- Speed Control Slider -->
+          <div class="prop-row" style="margin: 0;">
+            <label class="prop-label" style="font-size: 11px; color: #2c5d6b;">Durasi Kecepatan Animasi (<span
+                id="textAnimSpeedVal">3s</span>)</label>
+            <input type="range" id="textAnimSpeedSlider" min="0.5" max="10" step="0.5" value="3" class="prop-range"
+              oninput="changeTextAnimSpeed(this.value)" />
+          </div>
+
+          <!-- Preset List Label -->
+          <label class="prop-label" style="font-size: 11px; color: #2c5d6b; margin-top: 4px;">Pilih Efek Animasi
+            Teks</label>
+          <div id="textAnimPresetGrid" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered dynamically by builder_text_animation.js -->
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer"
+          style="padding: 12px 16px; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd;">
+          <button type="button" onclick="closeTextAnimationModal()"
+            style="padding: 8px 16px; border-radius: 8px; border: none; background: #e0e0e0; font-size: 12px; font-weight: 600; cursor: pointer; color: #555;">Batal</button>
+          <button type="button" onclick="applyTextAnimation()"
+            style="padding: 8px 18px; border-radius: 8px; border: none; background: #38a0c4; color: white; font-size: 12px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 6px rgba(56,160,196,0.3);">Terapkan
+            Animasi</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="toast" class="toast-notif">Desain berhasil disimpan!</div>
+  </div>
+  <textarea id="promotionPageData" style="display: none;">{{ promotion_page_data|safe }}</textarea>
+  <script>
+    window.unique_id = "{{ unique_id }}";
+    window.promotion_page_data = document.getElementById("promotionPageData").value;
+    window.isAdmin = "{{ is_admin }}" === "True" || "{{ is_admin }}" === "true";
+    window.actorName = "{{ name }}";
+    window.actorFoto = "{{ foto_visual }}";
+  </script>
+  <!-- Promotion Builder Modular Scripts -->
+  <script src="/static/js/builder_state.js"></script>
+  <script src="/static/js/builder_canvas.js"></script>
+  <script src="/static/js/builder_drag_resize.js"></script>
+  <script src="/static/js/builder_history.js"></script>
+  <script src="/static/js/builder_properties.js"></script>
+  <script src="/static/js/builder_shape_editor.js"></script>
+  <script src="/static/js/builder_text_animation.js"></script>
+  <script src="/static/js/builder_components.js"></script>
+  <script src="/static/js/builder_ai_tools.js"></script>
+  <script src="/static/js/builder_layers_actions.js"></script>
+</body>
+
+</html>

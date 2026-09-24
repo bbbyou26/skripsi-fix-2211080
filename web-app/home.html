@@ -1,0 +1,2830 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web GIS</title>
+  <meta name="description" content="Sistem Spasial Interaktif, Peta Leaflet, dan Profil Sistem 2211080">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="../static/image/icon.ico" />
+
+  <!-- Leaflet GIS Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Codebase GIS & Actor Popup Stylesheets -->
+  <link rel="stylesheet" href="../static/css/actor_popup.css" />
+  <link rel="stylesheet" href="../static/css/edit_business.css" />
+  <link rel="stylesheet" href="../static/css/edit_area.css" />
+
+  <!-- Landing Page Stylesheet -->
+  <link rel="stylesheet" href="style-css/home.css">
+
+  <!-- 3D Smartphone Device & Real GIS Screen Stylesheet -->
+  <link rel="stylesheet" href="style-css/phone.css">
+</head>
+
+<body>
+
+  <!-- Ambient Backdrop -->
+  <div class="bg-ambient"></div>
+
+  <!-- Site Header with Brand Logo, Navigation Links, and CTA -->
+  <header class="site-header">
+    <div class="nav-container">
+      <div class="brand-identity">
+        <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+          <img src="../static/image/logo.svg" alt="Logo 2211080" class="brand-logo">
+          <span class="brand-name">2211080</span>
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger Toggle Button (☰) -->
+      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Menu">
+        <span id="menuIcon">☰</span>
+      </button>
+
+      <nav class="site-nav" id="siteNav">
+        <a href="/" class="nav-link active">Beranda</a>
+        <a href="/tentang" class="nav-link">Tentang</a>
+        <a href="/auth" class="btn-cta-header mobile-nav-cta">MULAI SEKARANG</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/auth" class="btn-cta-header">MULAI SEKARANG</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Landing Page Viewport -->
+  <main class="main-viewport" id="beranda">
+    <!-- HERO SECTION (Matching Reference Layout Style) -->
+    <section class="hero-landing-section">
+      <!-- Centered Hero Header -->
+      <div class="hero-center-content">
+        <h1 class="hero-main-title" id="heroTypewriterTitle">
+          <span id="typewriterLine1">Web GIS &amp; AI Spasial</span><br />
+          <span id="typewriterLine2">Ekosistem Usaha Lokal</span><span class="typewriter-cursor">|</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Aplikasi Web GIS peta digital, pemodelan relasi Knowledge Graph, analisis cerdas Chatbot RAG berbasis
+          radius wilayah, dan pembuatan halaman promosi mandiri untuk pemberdayaan ekonomi lokal.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="hero-cta-group">
+          <button type="button" class="btn-hero-primary" onclick="window.openPhoneWithFeature('usaha')">
+            <span>Buka Simulator Peta</span>
+          </button>
+          <a href="/tentang" class="btn-hero-secondary">
+            <span>Tentang Peneliti &amp; Sistem</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Left Flanking Glass Card (Mencari Unit Usaha Spasial) -->
+      <div class="flanking-glass-card card-left">
+        <div class="flanking-icon-box">
+          <img src="img/tempat.svg" alt="Pencarian Unit Usaha" class="flanking-svg-img" />
+        </div>
+        <div class="flanking-text-content">
+          <h3 class="flanking-title">Pencarian Unit Usaha</h3>
+          <p class="flanking-desc">Eksplorasi dan temukan sebaran unit usaha secara spasial langsung di atas peta
+            interaktif.</p>
+        </div>
+      </div>
+
+      <!-- Right Flanking Glass Card (Pengembangan Ekonomi Berkelanjutan) -->
+      <div class="flanking-glass-card card-right">
+        <div class="flanking-icon-box">
+          <img src="img/showroom.svg" alt="Kemandirian Ekonomi" class="flanking-svg-img" />
+        </div>
+        <div class="flanking-text-content">
+          <h3 class="flanking-title">Kemandirian Ekonomi</h3>
+          <p class="flanking-desc">Pengembangan potensi ekonomi secara mandiri untuk mendukung tujuan usaha
+            berkelanjutan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 INTERACTIVE FEATURE CONTAINERS (Alternating Left-Right Zigzag with Phone in Each Container) -->
+    <section class="features-zigzag-section" id="fitur">
+      <div class="section-title-wrap" style="text-align: center; margin-bottom: 40px;">
+        <h2 class="section-heading"
+          style="font-size: 2.2rem; font-weight: 900; color: var(--color-text-navy); margin-bottom: 8px;">Modul &amp;
+          Sistem Terpadu</h2>
+        <p class="section-subheading" style="font-size: 1.05rem; color: var(--color-text-muted);">
+          Simulasi langsung 8 modul untuk eksplorasi peta, analisis usaha, dan promosi digital:
+        </p>
+      </div>
+
+      <div class="features-zigzag-list">
+        <!-- 1. Usaha (Left: Text, Right: Phone) -->
+        <div class="feature-zigzag-card" id="card-usaha">
+          <span class="feature-step-badge">Modul 1 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/actor/usaha.svg" alt="Aktor Usaha" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Pemetaan Unit Usaha</h2>
+            <p class="feature-desc-hero">
+              Integrasi profil data dan titik sebaran unit usaha lengkap dengan koordinat spasial, dokumentasi visual
+              serta akses langsung ke rincian aktivitas promosi dan lowongan kerja aktif di setiap
+              lokasi.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-lokasi')">
+                <span>Modul Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <!-- 3D SMARTPHONE DEVICE FRAME (360° ROTATABLE FRONT & BACK) -->
+            <div class="phone-3d-wrapper" id="phoneWrapper">
+              <div class="phone-3d-card" id="phoneCard">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <!-- REAL GIS APP CONTAINER WITH AUTOPLAY SIMULATION -->
+                    <div class="app app-autoplay-mode" id="appRoot">
+                      <!-- Simulated Touch Pointer for Autoplay Demo -->
+                      <div class="simulated-pointer" id="simulatedPointer"></div>
+
+                      <div id="map">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomIn">+</div>
+                          <div class="zoom-btn" id="zoomOut">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMap">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 18px; height: 18px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searching" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtn" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profile" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="profile-wrapper" id="profileWrapper">
+                        <div class="top-profile">
+                          <div id="imgProfile"><img src="../static/image/logo.svg" alt="Profile" /></div>
+                          <div class="name-container">
+                            <label class="nama">Administrator</label>
+                            <label class="status">2211080 Core</label>
+                          </div>
+                        </div>
+                        <div class="menu-profil" id="Profil">Profil Saya</div>
+                        <div class="menu-profil" id="AksesIzin">Akses Izin</div>
+                        <div class="menu-profil" id="Keluar">Keluar</div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMain">
+                          <span id="clusterText">Kabupaten / Kota</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterTool">☰</div>
+                        <div class="cluster-options" id="clusterOptions">
+                          <div class="cluster-option">RT / RW</div>
+                          <div class="cluster-option">Kelurahan</div>
+                          <div class="cluster-option">Kecamatan</div>
+                          <div class="cluster-option">Kabupaten / Kota</div>
+                        </div>
+                      </div>
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsaha"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasi"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsaha" title="Tambah / Edit Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+                      <div class="actor-main hidden" id="aktorLokasi" title="Tambah / Draw Lokasi">
+                        <span><img src="../static/image/actor/draw-location.svg"
+                            alt="Lokasi" /><br />Draw<br />Lokasi</span>
+                      </div>
+                      <div class="chatbot" id="chatbotBtn" title="Buka Chatbot AI Spasial">
+                        <span><img src="../static/image/actor/chatbot.svg" alt="Chatbot" /></span>
+                      </div>
+                      <div id="chatbotOverlay" class="chatbot-overlay hidden">
+                        <div class="chatbot-card">
+                          <div class="chatbot-header"
+                            style="align-items: center; border-bottom: none; padding-bottom: 12px;">
+                            <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+                              <img src="../static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+                              <div class="bot-info">
+                                <span class="bot-name">Chatbot AI</span>
+                                <span class="bot-status">Online • Siap membantu</span>
+                              </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                              <div class="jc-toggle-wrapper">
+                                <img src="../static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+                                <button id="mainJcToggle" class="btn-job-creation-toggle"
+                                  onclick="window.toggleJobCreationMenu()">Cipta Kerja</button>
+                              </div>
+                              <button class="close-chatbot" id="closeChatbotBtn" onclick="window.toggleChatbot()"
+                                title="Tutup">
+                                <img src="../static/image/icon/close.svg" alt="Tutup"
+                                  style="width: 16px; height: 16px;" />
+                              </button>
+                            </div>
+                          </div>
+                          <div id="jobCreationSubMenu" class="jc-submenu-container hidden">
+                            <div class="jc-chip" id="chipSumberDaya"
+                              style="display: flex; align-items: center; padding: 0; overflow: hidden;">
+                              <div
+                                onclick="window.setChatMode('sumber-daya', document.getElementById('chipSumberDaya'))"
+                                style="padding: 6px 10px; cursor: pointer;">Skill & Sumber Daya</div>
+                              <div style="width: 1px; height: 14px; background: currentColor; opacity: 0.3;"></div>
+                              <div onclick="document.getElementById('chatImgInput').click()"
+                                style="padding: 6px 10px; cursor: pointer; display: flex; align-items: center;"
+                                title="Upload Gambar Produk">
+                                <img src="../static/image/icon/images.svg" alt="Images"
+                                  style="width: 18px; height: 18px;" />
+                              </div>
+                            </div>
+                            <button class="jc-chip" onclick="window.setChatMode('celah-masalah', this)">Celah Masalah &
+                              Kebutuhan</button>
+                            <button class="jc-chip" onclick="window.setChatMode('analisis', this)">Analisis
+                              Teknis</button>
+                            <button class="jc-chip" onclick="window.setChatMode('simulasi-modal', this)">Simulasi Modal
+                              & Kelayakan</button>
+                            <button class="jc-chip"
+                              onclick="window.setChatMode('simulasi-lapangan-kerja', this)">Simulasi Lapangan
+                              Kerja</button>
+                          </div>
+                          <div class="chatbot-messages" id="chatMessages">
+                            <div class="message bot">
+                              <div class="bubble">Halo! Saya Chatbot AI 2211080. Ada yang bisa saya bantu terkait
+                                analisis wilayah atau data aktor?</div>
+                            </div>
+                          </div>
+                          <div class="chatbot-input-container">
+                            <div id="locationTargetBadge" class="location-badge hidden">
+                              <span>Lokasi telah tertarget</span>
+                              <button class="remove-target" onclick="window.removeLocationTarget()"
+                                title="Hapus Target">
+                                <img src="../static/image/icon/close.svg" alt="Hapus"
+                                  style="width: 12px; height: 12px; filter: brightness(0) invert(1);" />
+                              </button>
+                            </div>
+                            <div id="chatImagePreview" class="chat-image-preview hidden"
+                              style="position: relative; width: fit-content; margin-bottom: -4px;">
+                              <img id="chatPreviewImg" src=""
+                                style="height: 60px; border-radius: 8px; border: 1px solid #ccc; object-fit: cover;" />
+                              <button onclick="window.removeChatImage()" title="Hapus Gambar"
+                                style="position: absolute; top: -6px; right: -6px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
+                                <img src="../static/image/icon/close.svg" alt="Hapus"
+                                  style="width: 11px; height: 11px; filter: brightness(0) invert(1);" />
+                              </button>
+                            </div>
+                            <div class="input-wrapper">
+                              <button id="btnAiPin" class="ai-pin-btn" title="Targetkan Lokasi">
+                                <img src="../static/image/icon/ai-pin.svg" alt="Pin" />
+                              </button>
+                              <input type="file" id="chatImgInput" accept="image/*" style="display: none;"
+                                onchange="window.handleChatImageUpload(event)" />
+                              <textarea id="chatInput" placeholder="Tanyakan sesuatu..." rows="1"></textarea>
+                              <button class="send-chat" id="sendChatBtn" title="Kirim">
+                                <img src="../static/image/icon/send.svg" alt="Send"
+                                  style="width: 18px; height: 18px; display: block;" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- EDIT OVERLAY USAHA (100% Matching Original Codebase) -->
+                      <div class="edit-overlay" id="editUsahaOverlay">
+                        <div class="edit-card">
+                          <div class="edit-header">
+                            <div class="edit-title">Usaha</div>
+                            <div class="close-edit" id="closeUsahaEdit" title="Tutup">
+                              <img src="../static/image/icon/close.svg" alt="Tutup"
+                                style="width: 16px; height: 16px;" />
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label class="label">Nama</label>
+                            <textarea id="inputUsahaNama" placeholder="Masukkan nama usaha"></textarea>
+                          </div>
+
+                          <div class="form-group">
+                            <label class="label">Foto Visual</label>
+                            <div class="image-upload-wrapper" id="uploadWrapperUsaha">
+                              <button type="button" class="btn-image-upload" id="btnUploadUsaha">
+                                <img src="../static/image/icon/images.svg" alt="Upload"
+                                  style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Foto
+                              </button>
+                              <input type="file" id="fileUsaha" accept="image/*"
+                                style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+                            </div>
+                            <div class="preview" id="previewUsaha">
+                              <img src="img/siomay.svg" id="imgUploadPreview" alt="Foto Visual" />
+                            </div>
+                          </div>
+
+                          <div class="form-group">
+                            <label class="label">Fokus Usaha</label>
+                            <textarea id="inputUsahaFokus" placeholder="Masukkan fokus usaha / pekerjaan"></textarea>
+                          </div>
+
+                          <div class="btn-row">
+                            <button class="btn-save" id="btnSaveUsaha">Simpan</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="edit-overlay hidden" id="editLokasiOverlay">
+                        <div class="edit-card">
+                          <div class="edit-header">
+                            <div class="edit-title">Form Draw Lokasi</div>
+                            <div class="close-edit" id="closeLokasiEdit" title="Tutup">
+                              <img src="../static/image/icon/close.svg" alt="Tutup"
+                                style="width: 16px; height: 16px;" />
+                            </div>
+                          </div>
+                          <div class="form-group"><label class="label">Nama Lokasi / Kawasan</label><textarea
+                              id="inputLokasiNama" placeholder="Masukkan nama lokasi"></textarea></div>
+                          <div class="form-group"><label class="label">Marker Type</label><select id="selectLokasiType"
+                              class="input">
+                              <option>Pemukiman</option>
+                              <option>Lahan Industri</option>
+                              <option>Perairan / Pesisir</option>
+                            </select></div>
+                          <div class="btn-row"><button class="btn-save" id="btnSaveLokasi">Simpan Lokasi</button></div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- PROMOTION PAGE BUILDER APP CONTAINER -->
+                    <div class="app promotion-builder-app hidden" id="promotionBuilderContainer">
+                      <header class="builder-header">
+                        <div class="header-left">
+                          <button class="btn-back" id="btnBackToMap" title="Kembali ke Peta">
+                            <img src="../static/image/icon/back.svg" alt="Kembali" style="width: 18px; height: 18px;" />
+                          </button>
+                          <h1 class="app-title" id="builderAppTitle">Sentra Retail &amp; Karir 2211080</h1>
+                        </div>
+                        <div class="header-right">
+                          <button id="btnToggleLayers" class="btn-icon hidden" title="Tampilkan Sistem Layer">
+                            <img src="../static/image/icon/layer.svg" alt="Layer" style="width: 22px; height: 22px;" />
+                          </button>
+                          <button id="btnPalette" class="btn-icon hidden" title="Palet Warna">
+                            <img src="../static/image/icon/pallete.svg" alt="Palet"
+                              style="width: 22px; height: 22px;" />
+                          </button>
+                          <button id="btnUIKit" class="btn-icon hidden" title="UI Kit Block Templates">
+                            <img src="../static/image/icon/ui-kit.svg" alt="UI Kit"
+                              style="width: 22px; height: 22px;" />
+                          </button>
+                          <button id="btnToggleMode" class="btn-icon" title="Ubah Mode (Preview/Edit)">
+                            <img id="modeIcon" src="../static/image/icon/edit_builder.svg" alt="Edit"
+                              style="width: 22px; height: 22px;" />
+                          </button>
+                          <button id="btnSaveBuilder" class="btn-icon primary-glow hidden" title="Simpan Desain">
+                            <img src="../static/image/icon/save.svg" alt="Simpan" style="width: 22px; height: 22px;" />
+                          </button>
+                        </div>
+                      </header>
+                      <div id="paletteHeaderContainer" class="palette-header-container hidden">
+                        <div class="palette-header-title">Palet Warna Cepat</div>
+                        <div class="palette-header-swatches" id="paletteHeaderSwatches"></div>
+                      </div>
+                      <div class="toolbox-row" id="toolboxRow">
+                        <div class="toolbox-scroll">
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="title"><img
+                              src="../static/image/icon/text.svg" alt="" /> Judul</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="text"><img
+                              src="../static/image/icon/text.svg" alt="" /> Teks</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="image"><img
+                              src="../static/image/icon/images.svg" alt="" /> Gambar</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="button"><img
+                              src="../static/image/icon/form.svg" alt="" /> Tombol</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="card"><img
+                              src="../static/image/icon/uikit.svg" alt="" /> Card Konten</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="genui_chatbot">
+                            <img src="../static/image/icon/elemen-genui-chatbot.svg" alt="" /> GenUI Bot</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="shape"><img
+                              src="../static/image/icon/shapes.svg" alt="" /> Shape</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="container"><img
+                              src="../static/image/icon/container.svg" alt="" /> Kontainer</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="carousel"><img
+                              src="../static/image/icon/images.svg" alt="" /> Carousel</button>
+                          <button type="button" class="toolbox-chip" draggable="true" data-type="bg_settings"><img
+                              src="../static/image/icon/palette.svg" alt="" /> Background</button>
+                        </div>
+                      </div>
+                      <div class="canvas-workspace" id="canvasWorkspace">
+                        <div class="builder-canvas editing-active" id="builderCanvas"></div>
+                      </div>
+                      <div id="propertiesDrawer" class="properties-drawer hidden">
+                        <div class="drawer-header">
+                          <span class="drawer-title" id="drawerTitle">Pengaturan Elemen</span>
+                          <button class="drawer-close" id="closePropertiesDrawer" title="Tutup Pengaturan">
+                            <img src="../static/image/icon/close.svg" alt="Tutup" style="width: 14px; height: 14px;" />
+                          </button>
+                        </div>
+                        <div class="drawer-content">
+                          <div class="prop-row" id="propContentRow"><label class="prop-label">Konten /
+                              Teks</label><textarea id="propTextInput" class="prop-textarea"
+                              placeholder="Edit teks / label elemen..."></textarea></div>
+                          <div class="prop-row-split" id="propTypographyRow">
+                            <div><label class="prop-label">Ukuran Font (<span
+                                  id="propFontSizeVal">14</span>px)</label><input type="range" id="propFontSize"
+                                min="10" max="48" value="14" class="prop-range" /></div>
+                            <div><label class="prop-label">Ketebalan</label><select id="propFontWeight"
+                                class="prop-select">
+                                <option value="300">Light</option>
+                                <option value="400" selected>Regular</option>
+                                <option value="600">Semi-Bold</option>
+                                <option value="700">Bold</option>
+                              </select></div>
+                          </div>
+                          <div class="prop-row-split" id="propAlignColorRow">
+                            <div><label class="prop-label">Rata Teks</label><select id="propTextAlign"
+                                class="prop-select">
+                                <option value="left" selected>Kiri</option>
+                                <option value="center">Tengah</option>
+                                <option value="right">Kanan</option>
+                                <option value="justify">Justify</option>
+                              </select></div>
+                            <div class="prop-row-flex" style="align-items: flex-end;">
+                              <div class="prop-col"><label class="prop-label">Warna Teks</label><input type="color"
+                                  id="propTextColor" class="prop-color-input" value="#1e293b" /></div>
+                              <div class="prop-col"><label class="prop-label">Warna BG</label><input type="color"
+                                  id="propBgColor" class="prop-color-input" value="#38a0c4" /></div>
+                            </div>
+                          </div>
+                          <div class="prop-row-split">
+                            <div><label class="prop-label">Radius Sudut (<span
+                                  id="propBorderRadiusVal">8</span>px)</label><input type="range" id="propBorderRadius"
+                                min="0" max="32" value="8" class="prop-range" /></div>
+                            <div><label class="prop-label">Transparansi (<span
+                                  id="propOpacityVal">100</span>%)</label><input type="range" id="propOpacity" min="10"
+                                max="100" value="100" class="prop-range" /></div>
+                          </div>
+                          <div class="prop-row-split">
+                            <div>
+                              <label class="prop-label">Tinggi Halaman (Canvas)</label>
+                              <div style="display: flex; align-items: center; gap: 6px;"><input type="number"
+                                  id="propCanvasHeight" class="prop-input" value="650" min="300" max="3000"
+                                  style="flex:1;" /><span style="font-size: 11px; color: #64748b;">px</span></div>
+                            </div>
+                            <div style="display: flex; align-items: flex-end;">
+                              <button type="button" class="btn-delete-element" id="btnDeleteElement"
+                                title="Hapus elemen yang dipilih"><img src="../static/image/icon/delete.svg" alt=""
+                                  style="width: 13px; height: 13px; filter: brightness(0) invert(1);" /> Hapus</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="phone-glass-glare"></div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Draw Location (Left: Phone, Right: Text) -->
+        <div class="feature-zigzag-card reverse" id="card-lokasi">
+          <span class="feature-step-badge">Modul 2 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/actor/draw-location.svg" alt="Draw Lokasi" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Pemetaan Wilayah</h2>
+            <p class="feature-desc-hero">
+              Pengelolaan dan visualisasi batas wilayah, identifikasi area kawasan, serta pencatatan atribut spasial.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-usaha')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-campaign')">
+                <span>Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootLokasi">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerLokasi"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapLokasi">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInLokasi">+</div>
+                          <div class="zoom-btn" id="zoomOutLokasi">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapLokasi">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingLokasi" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnLokasi" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileLokasi" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainLokasi">
+                          <span id="clusterTextLokasi">RT / RW</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolLokasi">☰</div>
+                      </div>
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsaha2"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasi2"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsaha2" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+                      <div class="actor-main hidden" id="aktorLokasi2" title="Draw Lokasi">
+                        <span><img src="../static/image/actor/draw-location.svg"
+                            alt="Lokasi" /><br />Draw<br />Lokasi</span>
+                      </div>
+
+                      <!-- CHATBOT FLOATING ICON -->
+                      <div class="chatbot" id="chatbotBtnLokasi" title="Buka Chatbot AI Spasial">
+                        <span><img src="../static/image/actor/chatbot.svg" alt="Chatbot" /></span>
+                      </div>
+
+                      <!-- CHATBOT OVERLAY -->
+                      <div id="chatbotOverlayLokasi" class="chatbot-overlay hidden">
+                        <div class="chatbot-card">
+                          <div class="chatbot-header">
+                            <div class="header-left">
+                              <img src="../static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+                              <div class="bot-info">
+                                <span class="bot-name">Chatbot AI</span>
+                                <span class="bot-status">Online • Siap membantu</span>
+                              </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                              <div class="jc-toggle-wrapper">
+                                <img src="../static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+                                <button id="JcToggle" class="btn-job-creation-toggle"
+                                  onclick="window.toggleJobCreationMenu()">Cipta Kerja</button>
+                              </div>
+                              <button class="close-chatbot" id="closeChatbotBtnLokasi" title="Tutup">
+                                <img src="../static/image/icon/close.svg" alt="Tutup"
+                                  style="width: 16px; height: 16px;" />
+                              </button>
+                            </div>
+                          </div>
+                          <div class="chatbot-messages" id="chatMessagesLokasi">
+                            <div class="message bot">
+                              <div class="bubble">Halo! Ada yang bisa saya bantu terkait batas wilayah, zonasi
+                                pemukiman
+                                RT 48, atau catatan lahan di peta?</div>
+                            </div>
+                          </div>
+                          <div class="chatbot-input-container">
+                            <div class="input-wrapper">
+                              <button id="btnAiPinLokasi" class="ai-pin-btn" title="Targetkan Lokasi">
+                                <img src="../static/image/icon/ai-pin.svg" alt="Pin" />
+                              </button>
+                              <textarea id="chatInputLokasi" placeholder="Tanyakan analisis wilayah RT 48..."
+                                rows="1"></textarea>
+                              <button class="send-chat" id="sendChatBtnLokasi" title="Kirim">
+                                <img src="../static/image/icon/send.svg" alt="Kirim" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- EDIT OVERLAY LOKASI (100% Matching Original Codebase) -->
+                      <div class="edit-overlay" id="editLokasiOverlay2">
+                        <div class="edit-card">
+                          <div class="edit-header">
+                            <div class="edit-title">Lokasi</div>
+                            <div class="close-edit" id="closeLokasiEdit2" title="Tutup">
+                              <img src="../static/image/icon/close.svg" alt="Tutup"
+                                style="width: 16px; height: 16px;" />
+                            </div>
+                          </div>
+
+                          <div class="user-notes-section">
+                            <div class="form-group">
+                              <label class="label">Nama Catatan</label>
+                              <input type="text" class="input" id="inputLokasiNotesNameUser2"
+                                placeholder="Masukkan judul catatan (mis: Catatan Lahan)" />
+                            </div>
+
+                            <div class="form-group">
+                              <label class="label">Foto Catatan / Lampiran</label>
+                              <div class="image-upload-wrapper" id="uploadWrapperLokasi2"
+                                style="position: relative; width: 100%;">
+                                <button type="button" class="btn-image-upload"
+                                  style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                  <img src="../static/image/icon/images.svg" alt="Upload"
+                                    style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Foto Catatan
+                                </button>
+                                <input type="file" id="fileLokasiNotesUser2" accept="image/*"
+                                  style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+                              </div>
+                              <div class="preview" id="previewLokasi2" style="display: none;">
+                                <img src="" />
+                              </div>
+                            </div>
+
+                            <div class="form-group">
+                              <label class="label">Isi Catatan / Deskripsi</label>
+                              <textarea id="inputLokasiNotesTextUser2" placeholder="Catatan tambahan lokasi"></textarea>
+                            </div>
+                          </div>
+
+                          <div class="btn-row">
+                            <button class="btn-save" id="btnSaveLokasi2">Simpan</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Campaign (Left: Text, Right: Phone) -->
+        <div class="feature-zigzag-card" id="card-campaign">
+          <span class="feature-step-badge">Modul 3 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/icon/campaign.svg" alt="Kampanye Promosi" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Kampanye Promosi Digital</h2>
+            <p class="feature-desc-hero">
+              Modul manajemen promosi terpadu untuk merancang penawaran khusus yang terhubung langsung dengan titik
+              lokasi pada peta digital.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-lokasi')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-job-portal')">
+                <span>Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootCampaign">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerCampaign"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapCampaign">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInCampaign">+</div>
+                          <div class="zoom-btn" id="zoomOutCampaign">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapCampaign">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingCampaign" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnCampaign" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileCampaign" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainCampaign">
+                          <span id="clusterTextCampaign">Kelurahan</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolCampaign">☰</div>
+                      </div>
+
+                      <!-- ACTOR SWITCH & MAIN -->
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsaha3"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasi3"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsaha3" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+                      <div class="actor-main hidden" id="aktorLokasi3" title="Draw Lokasi">
+                        <span><img src="../static/image/actor/draw-location.svg"
+                            alt="Lokasi" /><br />Draw<br />Lokasi</span>
+                      </div>
+
+                      <!-- CHATBOT FLOATING ICON -->
+                      <div class="chatbot" id="chatbotBtnCampaign" title="Buka Chatbot AI Spasial">
+                        <span><img src="../static/image/actor/chatbot.svg" alt="Chatbot" /></span>
+                      </div>
+
+                      <!-- CHATBOT OVERLAY -->
+                      <div id="chatbotOverlayCampaign" class="chatbot-overlay hidden">
+                        <div class="chatbot-card">
+                          <div class="chatbot-header">
+                            <div class="header-left">
+                              <img src="../static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+                              <div class="bot-info">
+                                <span class="bot-name">Chatbot AI</span>
+                                <span class="bot-status">Online • Siap membantu</span>
+                              </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                              <div class="jc-toggle-wrapper">
+                                <img src="../static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+                                <button id="JcToggle" class="btn-job-creation-toggle"
+                                  onclick="window.toggleJobCreationMenu()">Cipta Kerja</button>
+                              </div>
+                              <button class="close-chatbot" id="closeChatbotBtnCampaign" title="Tutup">
+                                <img src="../static/image/icon/close.svg" alt="Tutup"
+                                  style="width: 16px; height: 16px;" />
+                              </button>
+                            </div>
+                          </div>
+                          <div class="chatbot-messages" id="chatMessagesCampaign">
+                            <div class="message bot">
+                              <div class="bubble">Halo! Sedang mencari Yamaha Jupiter MX, Jupiter Z, atau promo cuci
+                                gudang motor bebek di Balikpapan?</div>
+                            </div>
+                          </div>
+                          <div class="chatbot-input-container">
+                            <div class="input-wrapper">
+                              <button id="btnAiPinCampaign" class="ai-pin-btn" title="Targetkan Lokasi">
+                                <img src="../static/image/icon/ai-pin.svg" alt="Pin" />
+                              </button>
+                              <textarea id="chatInputCampaign" placeholder="Tanyakan stok Jupiter MX / Jupiter Z..."
+                                rows="1"></textarea>
+                              <button class="send-chat" id="sendChatBtnCampaign" title="Kirim">
+                                <img src="../static/image/icon/send.svg" alt="Send"
+                                  style="width: 18px; height: 18px; display: block;" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- PROMOTION PAGE VIEWER (Halaman Promosi Yamaha Jupiter MX & Jupiter Z) -->
+                      <div class="app promotion-builder-app hidden" id="promotionBuilderContainerCampaign">
+                        <header class="builder-header">
+                          <div class="header-left">
+                            <button class="btn-back" id="btnBackToMapCampaign" title="Kembali ke Peta">
+                              <img src="../static/image/icon/back.svg" alt="Kembali"
+                                style="width: 18px; height: 18px;" />
+                            </button>
+                            <h1 class="app-title" id="builderTitleCampaign">Showroom Nusantara Motor</h1>
+                          </div>
+                          <div class="header-right">
+                            <button id="btnToggleLayersCampaign" class="btn-icon hidden" title="Tampilkan Sistem Layer">
+                              <img src="../static/image/icon/layer.svg" alt="Layer"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnPaletteCampaign" class="btn-icon hidden" title="Palet Warna">
+                              <img src="../static/image/icon/pallete.svg" alt="Palet"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnUIKitCampaign" class="btn-icon hidden" title="UI Kit Block Templates">
+                              <img src="../static/image/icon/ui-kit.svg" alt="UI Kit"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnToggleModeCampaign" class="btn-icon" title="Ubah Mode (Preview/Edit)">
+                              <img id="modeIconCampaign" src="../static/image/icon/edit_builder.svg" alt="Edit"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnSaveCampaign" class="btn-icon primary-glow hidden" title="Simpan Desain">
+                              <img src="../static/image/icon/save.svg" alt="Simpan"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                          </div>
+                        </header>
+                        <div class="promotion-page-content" id="promoPageContentCampaign">
+                          <!-- Hero Promo Banner Jupiter -->
+                          <div class="promo-hero-card"
+                            style="background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                              <div>
+                                <span class="promo-badge" style="background: #f59e0b; color: #78350f;">Spesial Seri
+                                  Bebek</span>
+                                <h3 style="font-size: 14.5px; margin: 2px 0; font-weight: 800; color: white;">Yamaha
+                                  Jupiter MX &amp; Jupiter Z</h3>
+                                <p style="font-size: 10.5px; opacity: 0.95; margin: 0; color: white;">DP Mulai Rp
+                                  300
+                                  Ribu • Garansi Mesin 1 Tahun</p>
+                              </div>
+
+                            </div>
+                            <div class="promo-coupon-box">
+                              <span style="font-size: 10px; letter-spacing: 0.5px; color: white;">KODE KUPON:
+                                <strong>JUPITERHEMAT</strong></span>
+                              <span
+                                style="font-size: 9px; background: white; color: #1e3a8a; font-weight: 700; padding: 2px 6px; border-radius: 4px;">Klaim
+                                Promo</span>
+                            </div>
+                          </div>
+
+                          <!-- Info Keunggulan Showroom -->
+                          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px;">
+                            <div
+                              style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; font-size: 9.5px; color: #334155;">
+                              <strong style="color: #0f172a; display: block; margin-bottom: 2px;">✓ Surat Lengkap
+                                &amp;
+                                Resmi</strong>
+                              STNK &amp; BPKB asli tembus nomor mesin
+                            </div>
+                            <div
+                              style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px; font-size: 9.5px; color: #334155;">
+                              <strong style="color: #0f172a; display: block; margin-bottom: 2px;">✓ Garansi Mesin 1
+                                Thn</strong>
+                              Gratis ganti oli &amp; servis 3x
+                            </div>
+                          </div>
+
+                          <!-- Daftar Motor Promo Jupiter -->
+                          <div
+                            style="font-size: 11px; font-weight: 700; color: #1e293b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px;">
+                            Katalog Yamaha Jupiter Pilihan</div>
+
+                          <!-- 1. Jupiter MX King 150 -->
+                          <div class="promo-product-card">
+                            <img src="img/motor.svg" class="promo-product-img" alt="Yamaha Jupiter MX King 150" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div
+                                style="font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Yamaha Jupiter MX King 150 (2023)</div>
+                              <div style="font-size: 10px; color: #64748b;">Mesin Liquid Cooled 150cc • KM 9.400 •
+                                Siap
+                                Gas</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  17.800.000</span>
+                                <span style="font-size: 10px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  20.500.000</span>
+                                <span
+                                  style="font-size: 9px; background: #dcfce7; color: #166534; font-weight: 700; padding: 1px 4px; border-radius: 4px;">DP
+                                  500rb</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 2. Jupiter MX 135 LC -->
+                          <div class="promo-product-card">
+                            <img src="img/motor.svg" class="promo-product-img" alt="Yamaha Jupiter MX 135" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div
+                                style="font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Yamaha Jupiter MX 135 LC 5-Speed</div>
+                              <div style="font-size: 10px; color: #64748b;">Kopling orisinil • Bodi mulus kinclong •
+                                Pajak On</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  11.200.000</span>
+                                <span style="font-size: 10px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  13.500.000</span>
+                                <span
+                                  style="font-size: 9px; background: #dcfce7; color: #166534; font-weight: 700; padding: 1px 4px; border-radius: 4px;">DP
+                                  400rb</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 3. Jupiter Z1 Fuel Injection -->
+                          <div class="promo-product-card">
+                            <img src="img/motor.svg" class="promo-product-img" alt="Yamaha Jupiter Z1" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div
+                                style="font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Yamaha Jupiter Z1 Fuel Injection (2024)</div>
+                              <div style="font-size: 10px; color: #64748b;">Injeksi irit bertenaga • Tangan pertama
+                                •
+                                Plat KT</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  14.500.000</span>
+                                <span style="font-size: 10px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  16.800.000</span>
+                                <span
+                                  style="font-size: 9px; background: #dcfce7; color: #166534; font-weight: 700; padding: 1px 4px; border-radius: 4px;">DP
+                                  500rb</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 4. Jupiter Z Burhan CW -->
+                          <div class="promo-product-card">
+                            <img src="img/motor.svg" class="promo-product-img" alt="Yamaha Jupiter Z Burhan" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div
+                                style="font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                Yamaha Jupiter Z Burhan CW Orisinil</div>
+                              <div style="font-size: 10px; color: #64748b;">Koleksi legendaris • Mesin halus standar
+                                pabrik</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp 8.900.000</span>
+                                <span style="font-size: 10px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  10.500.000</span>
+                                <span
+                                  style="font-size: 9px; background: #dcfce7; color: #166534; font-weight: 700; padding: 1px 4px; border-radius: 4px;">DP
+                                  300rb</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- CTA WhatsApp -->
+                          <a href="https://wa.me/628123456789" target="_blank" class="promo-wa-btn"
+                            style="background: linear-gradient(135deg, #16a34a, #15803d);">
+                            <img src="../static/image/icon/phone.svg" alt=""
+                              style="width: 15px; height: 15px; filter: brightness(0) invert(1);" /> Booking Unit
+                            Jupiter via WhatsApp
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Job Portal (Left: Phone, Right: Text) -->
+        <div class="feature-zigzag-card reverse" id="card-job-portal">
+          <span class="feature-step-badge">Modul 4 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/icon/job-portal.svg" alt="Portal Lowongan" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Portal Lowongan Kerja Spasial</h2>
+            <p class="feature-desc-hero">
+              Pusat informasi dan peluang karir berbasis lokasi geografis yang menghubungkan para pencari kerja dengan
+              lowongan aktif di berbagai unit usaha terdekat.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-campaign')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-ai-pin')">
+                <span>Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootJobs">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerJobs"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapJobs">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInJobs">+</div>
+                          <div class="zoom-btn" id="zoomOutJobs">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapJobs">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingJobs" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnJobs" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileJobs" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainJobs">
+                          <span id="clusterTextJobs">Kelurahan</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolJobs">☰</div>
+                      </div>
+
+                      <!-- ACTOR SWITCH & MAIN -->
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsaha4"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasi4"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsaha4" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+                      <div class="actor-main hidden" id="aktorLokasi4" title="Draw Lokasi">
+                        <span><img src="../static/image/actor/draw-location.svg"
+                            alt="Lokasi" /><br />Draw<br />Lokasi</span>
+                      </div>
+
+                      <!-- CHATBOT FLOATING ICON -->
+                      <div class="chatbot" id="chatbotBtnJobs" title="Buka Chatbot AI Spasial">
+                        <span><img src="../static/image/actor/chatbot.svg" alt="Chatbot" /></span>
+                      </div>
+
+                      <!-- CHATBOT OVERLAY -->
+                      <div id="chatbotOverlayJobs" class="chatbot-overlay hidden">
+                        <div class="chatbot-card">
+                          <div class="chatbot-header">
+                            <div class="header-left">
+                              <img src="../static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+                              <div class="bot-info">
+                                <span class="bot-name">Chatbot AI</span>
+                                <span class="bot-status">Online • Siap membantu</span>
+                              </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                              <div class="jc-toggle-wrapper">
+                                <img src="../static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+                                <button id="JcToggle" class="btn-job-creation-toggle"
+                                  onclick="window.toggleJobCreationMenu()">Cipta Kerja</button>
+                              </div>
+                              <button class="close-chatbot" id="closeChatbotBtnJobs" title="Tutup">
+                                <img src="../static/image/icon/close.svg" alt="Tutup"
+                                  style="width: 16px; height: 16px;" />
+                              </button>
+                            </div>
+                          </div>
+                          <div class="chatbot-messages" id="chatMessagesJobs">
+                            <div class="message bot">
+                              <div class="bubble">Halo! Sedang mencari informasi peluang kerja atau analisa
+                                industri di
+                                Balikpapan?</div>
+                            </div>
+                          </div>
+                          <div class="chatbot-input-container">
+                            <div class="input-wrapper">
+                              <button id="btnAiPinJobs" class="ai-pin-btn" title="Targetkan Lokasi">
+                                <img src="../static/image/icon/ai-pin.svg" alt="Pin" />
+                              </button>
+                              <textarea id="chatInputJobs" placeholder="Tanyakan info kerja atau industri F&B..."
+                                rows="1"></textarea>
+                              <button class="send-chat" id="sendChatBtnJobs" title="Kirim">
+                                <img src="../static/image/icon/send.svg" alt="Send"
+                                  style="width: 18px; height: 18px; display: block;" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- 6. AI Pin (Left: Phone, Right: Text) -->
+        <div class="feature-zigzag-card reverse" id="card-ai-pin">
+          <span class="feature-step-badge">Modul 5 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/icon/ai-pin.svg" alt="AI Pin Target" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Chatbot Spasial Radius</h2>
+            <p class="feature-desc-hero">
+              Chatbot terintegrasi penandaan pin lokasi radius area untuk menganalisis
+              potensi pasar serta persebaran kebutuhan lokal di sekitar titik target spasial.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-job-portal')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-job-mode')">
+                <span>Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootAiPin">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerAiPin"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapAiPin">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInAiPin">+</div>
+                          <div class="zoom-btn" id="zoomOutAiPin">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapAiPin">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingAiPin" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnAiPin" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileAiPin" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainAiPin">
+                          <span id="clusterTextAiPin">Kelurahan</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolAiPin">☰</div>
+                      </div>
+
+                      <!-- ACTOR SWITCH & MAIN -->
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsaha5"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasi5"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsaha5" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+                      <div class="actor-main hidden" id="aktorLokasi5" title="Draw Lokasi">
+                        <span><img src="../static/image/actor/draw-location.svg"
+                            alt="Lokasi" /><br />Draw<br />Lokasi</span>
+                      </div>
+
+                      <!-- RADIUS CONTROL DRAWER -->
+                      <!-- RADIUS CONTROL PANEL (1:1 SPATIAL CHAT JS) -->
+                      <div id="radiusPanelAiPin" class="radius-panel hidden">
+                        <div class="radius-info">
+                          <span class="radius-label">Tentukan Radius</span>
+                          <span id="radiusDispAiPin" class="radius-val">1200 m</span>
+                        </div>
+                        <input type="range" id="radiusSliderAiPin" min="50" max="10000" step="50" value="1200" />
+                        <button class="btn-save-radius" id="btnSaveRadiusAiPin">Kunci Lokasi</button>
+                      </div>
+
+                      <!-- CHATBOT FLOATING ICON -->
+                      <div class="chatbot" id="chatbotBtnAiPin" title="Buka Chatbot AI Spasial">
+                        <span><img src="../static/image/actor/chatbot.svg" alt="Chatbot" /></span>
+                      </div>
+
+                      <!-- CHATBOT OVERLAY -->
+                      <div id="chatbotOverlayAiPin" class="chatbot-overlay hidden">
+                        <div class="chatbot-card">
+                          <div class="chatbot-header">
+                            <div class="header-left">
+                              <img src="../static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+                              <div class="bot-info">
+                                <span class="bot-name">Chatbot AI</span>
+                                <span class="bot-status">Online • Siap membantu</span>
+                              </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                              <div class="jc-toggle-wrapper">
+                                <img src="../static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+                                <button id="JcToggle" class="btn-job-creation-toggle"
+                                  onclick="window.toggleJobCreationMenu()">Cipta Kerja</button>
+                              </div>
+                              <button class="close-chatbot" id="closeChatbotBtnAiPin" title="Tutup">
+                                <img src="../static/image/icon/close.svg" alt="Tutup"
+                                  style="width: 16px; height: 16px;" />
+                              </button>
+                            </div>
+                          </div>
+                          <div class="chatbot-messages" id="chatMessagesAiPin">
+                            <div class="message bot">
+                              <div class="bubble">Halo! Gunakan AI Pin untuk menargetkan titik radius wilayah
+                                dan
+                                dapatkan analisis kebutuhan lokal.</div>
+                            </div>
+                          </div>
+                          <div class="chatbot-input-container">
+                            <div id="locationTargetBadgeAiPin" class="location-badge hidden">
+                              <span>Area Target MT Haryono (Radius 1200m)</span>
+                              <button class="remove-target" id="btnRemoveTargetAiPin" title="Hapus Target">
+                                <img src="../static/image/icon/close.svg" alt="Hapus"
+                                  style="width: 12px; height: 12px; filter: brightness(0) invert(1);" />
+                              </button>
+                            </div>
+                            <div class="input-wrapper">
+                              <button id="btnAiPinTargetAiPin" class="ai-pin-btn" title="Targetkan Lokasi">
+                                <img src="../static/image/icon/ai-pin.svg" alt="Pin" />
+                              </button>
+                              <textarea id="chatInputAiPin" placeholder="Tanyakan kebutuhan layanan / pijat urut..."
+                                rows="1"></textarea>
+                              <button class="send-chat" id="sendChatBtnAiPin" title="Kirim">
+                                <img src="../static/image/icon/send.svg" alt="Send"
+                                  style="width: 18px; height: 18px; display: block;" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- PROMOTION PAGE VIEWER (Landing Page Jasa Pijat & Refleksi Pak Maryono - Full Color) -->
+                      <div class="app promotion-builder-app hidden" id="promotionBuilderContainerAiPin">
+                        <!-- Header 1:1 Builder Layout -->
+                        <header class="builder-header">
+                          <div class="header-left">
+                            <button class="btn-back" id="btnBackToMapAiPin" title="Kembali ke Peta">
+                              <img src="../static/image/icon/back.svg" alt="Kembali"
+                                style="width: 18px; height: 18px;" />
+                            </button>
+                            <h1 class="app-title">Pijat Tradisional & Refleksi Pak Maryono</h1>
+                          </div>
+
+                        </header>
+
+                        <!-- Scrollable Landing Page Body -->
+                        <div class="promo-landing-scrollable" id="promoPageContentAiPin">
+                          <!-- 1. Hero Promo Banner -->
+                          <div class="promo-hero-card"
+                            style="background: linear-gradient(135deg, #0284c7, #0d9488); box-shadow: 0 6px 18px rgba(2,132,199,0.32); border-radius: 14px; padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                              <div style="flex: 1;">
+                                <span class="promo-badge"
+                                  style="background: #fef08a; color: #713f12; font-weight: 800; font-size: 9px; padding: 3px 8px; border-radius: 6px; display: inline-block;">TERAPIS
+                                  SPESIALIS SARAF & URUT</span>
+                                <h3
+                                  style="font-size: 15px; margin: 5px 0 2px 0; font-weight: 800; color: white; line-height: 1.25;">
+                                  Pijat Tradisional & Terapi Punggung</h3>
+                                <p style="font-size: 10.5px; opacity: 0.95; margin: 0; color: #f0fdfa;">Solusi
+                                  Sakit
+                                  Pinggang, Saraf Kaku, Pegal Linu & Migrain</p>
+                              </div>
+
+                            </div>
+                            <div class="promo-coupon-box"
+                              style="background: rgba(255,255,255,0.2); border: 1.5px dashed rgba(255,255,255,0.8); border-radius: 8px; padding: 8px 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                              <span
+                                style="font-size: 10.5px; letter-spacing: 0.5px; color: white; font-weight: 600;">KODE
+                                KUPON: <strong>SEHAT20</strong></span>
+                              <span
+                                style="font-size: 9.5px; background: white; color: #0284c7; font-weight: 800; padding: 2px 7px; border-radius: 4px;">Diskon
+                                20%</span>
+                            </div>
+                          </div>
+
+                          <!-- 2. Quick Stats Grid -->
+                          <div class="promo-stats-grid">
+                            <div class="promo-stat-item">
+                              <div class="promo-stat-num">15+ Thn</div>
+                              <div class="promo-stat-desc">Pengalaman</div>
+                            </div>
+                            <div class="promo-stat-item">
+                              <div class="promo-stat-num">1.200+</div>
+                              <div class="promo-stat-desc">Pasien Puas</div>
+                            </div>
+                            <div class="promo-stat-item">
+                              <div class="promo-stat-num">4.9/5.0</div>
+                              <div class="promo-stat-desc">Rating Teruji</div>
+                            </div>
+                          </div>
+
+                          <!-- 3. Profil & Tentang Terapis -->
+                          <div class="promo-about-card">
+                            <div class="promo-avatar"></div>
+                            <div style="flex: 1; min-width: 0;">
+                              <div style="font-size: 11.5px; font-weight: 800; color: #0f172a;">Pak Maryono
+                                (Terapis
+                                Berpengalaman)</div>
+                              <div style="font-size: 9.5px; color: #0284c7; font-weight: 700; margin-bottom: 2px;">
+                                Spesialis Urut Tradisional & Terapi Saraf Otot</div>
+                              <div style="font-size: 9.5px; color: #475569; line-height: 1.35;">
+                                Berpengalaman lebih dari 15 tahun membantu warga Balikpapan mengatasi gangguan
+                                saraf
+                                kejepit, pegal menahun, dan kelelahan fisik.
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 4. Keunggulan Layanan Kami -->
+                          <div class="promo-section-title">
+                            <span>Mengapa Memilih Kami?</span>
+                          </div>
+                          <div class="promo-benefit-grid">
+                            <div class="promo-benefit-card">
+                              <span class="promo-benefit-title">Titik Saraf Akurat</span>
+                              <span>Menemukan simpul saraf yang tegang tanpa rasa sakit berlebih.</span>
+                            </div>
+                            <div class="promo-benefit-card">
+                              <span class="promo-benefit-title">Minyak Rempah Alami</span>
+                              <span>Racikan minyak herbal alami aromaterapi yang menghangatkan tubuh.</span>
+                            </div>
+                            <div class="promo-benefit-card">
+                              <span class="promo-benefit-title">Bisa Home Service</span>
+                              <span>Terapis siap datang langsung ke rumah atau kantor Anda di Balikpapan.</span>
+                            </div>
+                            <div class="promo-benefit-card">
+                              <span class="promo-benefit-title">Higienis & Steril</span>
+                              <span>Peralatan bersih, terapis ramah, sopan, dan bersertifikat.</span>
+                            </div>
+                          </div>
+
+                          <!-- 5. Daftar Paket Layanan & Harga Full Color -->
+                          <div class="promo-section-title">
+                            <span>Pilihan Paket Layanan Terapi</span>
+                          </div>
+
+                          <!-- Paket 1: Pijat Punggung -->
+                          <div class="promo-product-card"
+                            style="background: #ffffff; border: 1.5px solid #38bdf8; box-shadow: 0 4px 12px rgba(56,189,248,0.14); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+                            <img src="img/pijat.svg" class="promo-product-img"
+                              style="border-color: #38bdf8; background: #f0f9ff; width: 44px; height: 44px; border-radius: 8px;"
+                              alt="Pijat Punggung" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div
+                                  style="font-size: 11.5px; font-weight: 800; color: #0284c7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                  Pijat Tradisional & Punggung</div>
+                                <span
+                                  style="font-size: 8.5px; background: #e0f2fe; color: #0369a1; font-weight: 700; padding: 2px 6px; border-radius: 4px;">60
+                                  Menit</span>
+                              </div>
+                              <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Atasi pegal linu,
+                                sakit
+                                pinggang & pundak kaku</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  90.000</span>
+                                <span style="font-size: 9.5px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  115.000</span>
+                                <span
+                                  style="font-size: 8.5px; background: #fee2e2; color: #dc2626; font-weight: 700; padding: 1px 4px; border-radius: 4px;">-20%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Paket 2: Bekam + Pijat -->
+                          <div class="promo-product-card"
+                            style="background: #ffffff; border: 1.5px solid #a855f7; box-shadow: 0 4px 12px rgba(168,85,247,0.14); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+                            <img src="img/pijat.svg" class="promo-product-img"
+                              style="border-color: #a855f7; background: #faf5ff; width: 44px; height: 44px; border-radius: 8px;"
+                              alt="Paket Kombinasi" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div
+                                  style="font-size: 11.5px; font-weight: 800; color: #7c3aed; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                  Paket Pijat + Bekam Kering</div>
+                                <span
+                                  style="font-size: 8.5px; background: #f3e8ff; color: #7c3aed; font-weight: 700; padding: 2px 6px; border-radius: 4px;">90
+                                  Menit</span>
+                              </div>
+                              <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Lancarkan
+                                sirkulasi darah
+                                & reda pegal menahun</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  120.000</span>
+                                <span style="font-size: 9.5px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  150.000</span>
+                                <span
+                                  style="font-size: 8.5px; background: #fee2e2; color: #dc2626; font-weight: 700; padding: 1px 4px; border-radius: 4px;">-20%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Paket 3: Refleksi Kaki -->
+                          <div class="promo-product-card"
+                            style="background: #ffffff; border: 1.5px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.14); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+                            <img src="img/pijat.svg" class="promo-product-img"
+                              style="border-color: #10b981; background: #f0fdf4; width: 44px; height: 44px; border-radius: 8px;"
+                              alt="Refleksi Kaki" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div
+                                  style="font-size: 11.5px; font-weight: 800; color: #059669; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                  Refleksi Kaki Titik Vital</div>
+                                <span
+                                  style="font-size: 8.5px; background: #d1fae5; color: #059669; font-weight: 700; padding: 2px 6px; border-radius: 4px;">45
+                                  Menit</span>
+                              </div>
+                              <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Stimulasi titik
+                                saraf &
+                                hilangkan rasa lelah</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  75.000</span>
+                                <span style="font-size: 9.5px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  95.000</span>
+                                <span
+                                  style="font-size: 8.5px; background: #fee2e2; color: #dc2626; font-weight: 700; padding: 1px 4px; border-radius: 4px;">-20%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Paket 4: Full Body Home Care -->
+                          <div class="promo-product-card"
+                            style="background: #ffffff; border: 1.5px solid #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,0.14); border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+                            <img src="img/pijat.svg" class="promo-product-img"
+                              style="border-color: #f59e0b; background: #fffbeb; width: 44px; height: 44px; border-radius: 8px;"
+                              alt="Full Body" />
+                            <div style="flex: 1; min-width: 0;">
+                              <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div
+                                  style="font-size: 11.5px; font-weight: 800; color: #d97706; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                  Full Body Wellness Care</div>
+                                <span
+                                  style="font-size: 8.5px; background: #fef3c7; color: #d97706; font-weight: 700; padding: 2px 6px; border-radius: 4px;">120
+                                  Menit</span>
+                              </div>
+                              <div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">Pijat total +
+                                refleksi
+                                telapak + aroma herbal</div>
+                              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #059669;">Rp
+                                  180.000</span>
+                                <span style="font-size: 9.5px; text-decoration: line-through; color: #94a3b8;">Rp
+                                  225.000</span>
+                                <span
+                                  style="font-size: 8.5px; background: #fee2e2; color: #dc2626; font-weight: 700; padding: 1px 4px; border-radius: 4px;">-20%</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 6. Testimoni Pasien & Warga Sekitar -->
+                          <div class="promo-section-title">
+                            <span>Testimoni Pasien & Pelanggan</span>
+                          </div>
+                          <div class="promo-testimonials-wrapper">
+                            <!-- Testimoni 1 -->
+                            <div class="promo-testimonial-card">
+                              <div class="testimonial-header">
+                                <div>
+                                  <div class="testimonial-author">Hendra Saputra</div>
+                                  <div class="testimonial-loc">Warga Damai, Balikpapan</div>
+                                </div>
+                                <div class="testimonial-stars">★★★★★</div>
+                              </div>
+                              <div class="testimonial-quote">
+                                "Sudah 2 minggu pinggang ngilu banget gara-gara angkat barang berat. Diurut Pak
+                                Maryono
+                                sekali, besok paginya langsung enteng dan fit lagi. Mantap!"
+                              </div>
+                            </div>
+
+                            <!-- Testimoni 2 -->
+                            <div class="promo-testimonial-card">
+                              <div class="testimonial-header">
+                                <div>
+                                  <div class="testimonial-author">Ibu Ratna Dewi</div>
+                                  <div class="testimonial-loc">Jl. MT Haryono</div>
+                                </div>
+                                <div class="testimonial-stars">★★★★★</div>
+                              </div>
+                              <div class="testimonial-quote">
+                                "Paket pijat kombinasi bekamnya juara! Pak Maryono paham betul titik simpul
+                                saraf yang
+                                kaku. Minyak aromaterapinya wangi dan menenangkan."
+                              </div>
+                            </div>
+
+                            <!-- Testimoni 3 -->
+                            <div class="promo-testimonial-card">
+                              <div class="testimonial-header">
+                                <div>
+                                  <div class="testimonial-author">Bambang Wijaya</div>
+                                  <div class="testimonial-loc">Gunung Sari, Balikpapan</div>
+                                </div>
+                                <div class="testimonial-stars">★★★★★</div>
+                              </div>
+                              <div class="testimonial-quote">
+                                "Layanan home servicenya sangat on-time. Terapis sopan, profesional, dan
+                                tarifnya sangat
+                                bersahabat untuk kualitas pemijatan sebagus ini."
+                              </div>
+                            </div>
+
+                            <!-- Testimoni 4 -->
+                            <div class="promo-testimonial-card">
+                              <div class="testimonial-header">
+                                <div>
+                                  <div class="testimonial-author">H. Syamsudin</div>
+                                  <div class="testimonial-loc">Ring Road Balikpapan</div>
+                                </div>
+                                <div class="testimonial-stars">★★★★★</div>
+                              </div>
+                              <div class="testimonial-quote">
+                                "Langganan keluarga sejak 3 tahun lalu. Tiap badan meriang atau leher kaku,
+                                selalu
+                                panggil Pak Maryono. Badan langsung segar bugar."
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- 7. Lokasi Praktik & Jam Buka -->
+                          <div class="promo-location-card">
+                            <div
+                              style="font-size: 11px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                              <img src="../static/image/icon/ai-pin.svg" alt="" style="width: 14px; height: 14px;" />
+                              Lokasi Praktik & Layanan Panggilan
+                            </div>
+                            <div style="font-size: 9.5px; color: #475569;">
+                              <strong>Alamat:</strong> Jl. MT Haryono No. 34, RT 22 Kel. Damai, Balikpapan
+                            </div>
+                            <div style="font-size: 9.5px; color: #475569;">
+                              <strong>Jam Praktik:</strong> Setiap Hari 08.00 – 21.30 WITA (Bisa Reservasi)
+                            </div>
+                          </div>
+
+                          <!-- 8. CTA Booking WhatsApp -->
+                          <a href="https://wa.me/628123456789" target="_blank" class="promo-wa-btn"
+                            style="background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 4px 14px rgba(34,197,94,0.38); border-radius: 10px; padding: 10px 14px; color: white; text-decoration: none; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 2px;">
+                            <img src="../static/image/icon/phone.svg" alt=""
+                              style="width: 15px; height: 15px; filter: brightness(0) invert(1);" /> Booking
+                            Jadwal via
+                            WhatsApp Sekarang
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Job Mode (Left: Text, Right: Phone) -->
+        <div class="feature-zigzag-card" id="card-job-mode">
+          <span class="feature-step-badge">Modul 6 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/icon/job-mode.svg" alt="Cipta Kerja" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Mode Cipta Kerja</h2>
+            <p class="feature-desc-hero">
+              Fitur interaktif bagi wirausahawan untuk merancang kelayakan bisnis, membuka peluang usaha baru, serta
+              menganalisis potensi serapan pasar yang tepat guna di suatu wilayah.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-ai-pin')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-view')">
+                <span>Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootJobMode">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerJobMode"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapJobMode">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInJobMode">+</div>
+                          <div class="zoom-btn" id="zoomOutJobMode">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapJobMode">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingJobMode" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnJobMode" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileJobMode" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainJobMode">
+                          <span id="clusterTextJobMode">Kelurahan</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolJobMode">☰</div>
+                      </div>
+
+                      <!-- ACTOR SWITCH & MAIN -->
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active"
+                          data-target="aktorUsahaJobMode" title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasiJobMode"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsahaJobMode" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+                      <div class="actor-main hidden" id="aktorLokasiJobMode" title="Draw Lokasi">
+                        <span><img src="../static/image/actor/draw-location.svg"
+                            alt="Lokasi" /><br />Draw<br />Lokasi</span>
+                      </div>
+
+                      <!-- CHATBOT FLOATING ICON -->
+                      <div class="chatbot" id="chatbotBtnJobMode" title="Buka Chatbot AI Cipta Kerja">
+                        <span><img src="../static/image/actor/chatbot.svg" alt="Chatbot" /></span>
+                      </div>
+
+                      <!-- CHATBOT OVERLAY -->
+                      <div id="chatbotOverlayJobMode" class="chatbot-overlay hidden">
+                        <div class="chatbot-card">
+                          <div class="chatbot-header"
+                            style="align-items: center; border-bottom: none; padding-bottom: 8px;">
+                            <div class="header-left" style="display: flex; align-items: center; gap: 8px;">
+                              <img src="../static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+                              <div class="bot-info">
+                                <span class="bot-name">Chatbot AI</span>
+                                <span class="bot-status">Online • Siap membantu</span>
+                              </div>
+                            </div>
+
+                            <div style="display: flex; align-items: flex-end; gap: 8px;">
+                              <div class="jc-toggle-wrapper">
+                                <img src="../static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+                                <button id="mainJcToggleJobMode" class="btn-job-creation-toggle">Cipta
+                                  Kerja</button>
+                              </div>
+                              <button class="close-chatbot" id="closeChatbotBtnJobMode" title="Tutup">
+                                <img src="../static/image/icon/close.svg" alt="Tutup"
+                                  style="width: 16px; height: 16px;" />
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Submenu Chips (1:1 with map.html) -->
+                          <div id="jobCreationSubMenuJobMode" class="jc-submenu-container hidden">
+                            <button class="jc-chip active" id="chipSumberDayaJobMode" data-mode="sumber-daya">Skill &
+                              Sumber Daya</button>
+                            <button class="jc-chip" id="chipCelahMasalahJobMode" data-mode="celah-masalah">Celah
+                              Masalah
+                              & Kebutuhan</button>
+                            <button class="jc-chip" id="chipAnalisisJobMode" data-mode="analisis">Analisis
+                              Teknis</button>
+                            <button class="jc-chip" id="chipSimulasiModalJobMode" data-mode="simulasi-modal">Simulasi
+                              Modal & Kelayakan</button>
+                            <button class="jc-chip" id="chipSimulasiKerjaJobMode"
+                              data-mode="simulasi-lapangan-kerja">Simulasi Lapangan Kerja</button>
+                          </div>
+
+                          <div class="chatbot-messages" id="chatMessagesJobMode">
+                            <div class="message bot">
+                              <div class="bubble">Halo! Aktifkan mode Cipta Kerja untuk menganalisis potensi
+                                usaha dari
+                                skill, celah masalah, modal, hingga lapangan kerja.</div>
+                            </div>
+                          </div>
+
+                          <div class="chatbot-input-container">
+                            <div class="input-wrapper">
+                              <button id="btnAiPinJobMode" class="ai-pin-btn" title="Targetkan Lokasi">
+                                <img src="../static/image/icon/ai-pin.svg" alt="Pin" />
+                              </button>
+                              <textarea id="chatInputJobMode" placeholder="Sebutkan skill/aset lokal yang kamu punya..."
+                                rows="1"></textarea>
+                              <button class="send-chat" id="sendChatBtnJobMode" title="Kirim">
+                                <img src="../static/image/icon/send.svg" alt="Send"
+                                  style="width: 18px; height: 18px; display: block;" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. View (Halaman Promosi) (Left: Phone, Right: Text) -->
+        <div class="feature-zigzag-card reverse" id="card-view">
+          <span class="feature-step-badge">Modul 7 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/icon/view.svg" alt="Halaman Promosi" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">Halaman Promosi Builder</h2>
+            <p class="feature-desc-hero">
+              Fitur builder mandiri untuk merancang dan menyusun desain halaman promosi sesuai identitas usaha secara
+              fleksibel.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-job-mode')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-genui')">
+                <span>Berikutnya</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootView">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerView"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapView">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInView">+</div>
+                          <div class="zoom-btn" id="zoomOutView">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapView">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingView" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnView" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileView" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainView">
+                          <span id="clusterTextView">Kelurahan</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolView">☰</div>
+                      </div>
+
+                      <!-- ACTOR SWITCH & MAIN -->
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsahaView"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasiView"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsahaView" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+
+                      <!-- PROMOTION PAGE BUILDER / VIEWER CONTAINER -->
+                      <div id="promoBuilderContainerView" class="promo-builder-full-overlay hidden">
+                        <!-- HEADER -->
+                        <header class="builder-header">
+                          <div class="header-left">
+                            <button class="btn-back" id="btnBackToMapView" title="Kembali ke Peta">
+                              <img src="../static/image/icon/back.svg" alt="Kembali"
+                                style="width: 18px; height: 18px;" />
+                            </button>
+                            <h1 class="app-title" id="builderTitleView">Konsultan HR &amp; Rekrutmen</h1>
+                          </div>
+                          <div class="header-right">
+                            <button id="btnToggleLayersView" class="btn-icon hidden" title="Tampilkan Sistem Layer">
+                              <img src="../static/image/icon/layer.svg" alt="Layer"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnPaletteView" class="btn-icon hidden" title="Palet Warna">
+                              <img src="../static/image/icon/pallete.svg" alt="Palet"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnUIKitView" class="btn-icon hidden" title="UI Kit Block Templates">
+                              <img src="../static/image/icon/ui-kit.svg" alt="UI Kit"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnToggleModeView" class="btn-icon" title="Ubah Mode (Preview/Edit)">
+                              <img id="modeIconView" src="../static/image/icon/edit_builder.svg" alt="Edit"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnSaveView" class="btn-icon primary-glow hidden" title="Simpan Desain">
+                              <img src="../static/image/icon/save.svg" alt="Simpan"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                          </div>
+                        </header>
+
+                        <!-- TOOLBOX ROW (DRAGGABLE CHIPS) -->
+                        <div id="toolboxRowView" class="toolbox-row hidden">
+                          <div class="toolbox-scroll" id="toolboxScrollView">
+
+                            <div class="toolbox-chip" id="chipToolTitleView" data-type="title">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-judul.svg" alt="" width="18"
+                                  height="18"></span> Judul
+                            </div>
+                            <div class="toolbox-chip" id="chipToolTextView" data-type="text">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-paragraf.svg" alt=""
+                                  width="18" height="18"></span> Paragraf
+                            </div>
+
+
+
+                            <div class="toolbox-chip" id="chipToolImageView" data-type="image">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-gambar.svg" alt=""
+                                  width="18" height="18"></span> Gambar
+                            </div>
+                            <div class="toolbox-chip" id="chipToolBoxView" data-type="shape">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-box.svg" alt="" width="18"
+                                  height="18"></span> Box
+                            </div>
+                            <div class="toolbox-chip" id="chipToolContainerView" data-type="container">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-kontainer.svg" alt=""
+                                  width="18" height="18"></span> Kontainer
+                            </div>
+                            <div class="toolbox-chip" id="chipToolColumnView" data-type="column">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-kolom.svg" alt="" width="18"
+                                  height="18"></span> Kolom
+                            </div>
+                            <div class="toolbox-chip" id="chipToolRowView" data-type="row">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-baris.svg" alt="" width="18"
+                                  height="18"></span> Baris
+                            </div>
+                            <div class="toolbox-chip" id="chipToolCarouselView" data-type="carousel">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-carousel.svg" alt=""
+                                  width="18" height="18"></span> Carousel
+                            </div>
+                            <div class="toolbox-chip" id="chipToolButtonView" data-type="button">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-tombol.svg" alt=""
+                                  width="18" height="18"></span> Tombol
+                            </div>
+                            <div class="toolbox-chip" id="chipToolMediaView" data-type="media_embed">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-media.svg" alt="" width="18"
+                                  height="18"></span> Media Embed
+                            </div>
+                            <div class="toolbox-chip genui-chip" id="chipToolGenUIView" data-type="genui_chatbot">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-genui-chatbot.svg" alt=""
+                                  width="18" height="18"></span> GenUI Chatbot
+                            </div>
+                            <div class="toolbox-chip genui-chip" id="chipToolBoxInteraktifView"
+                              data-type="box_interaktif">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-box-interaktif.svg" alt=""
+                                  width="18" height="18"></span> Box Interaktif
+                            </div>
+                            <div class="toolbox-chip bg-setting-chip" id="chipToolBgView">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-bg-halaman.svg" alt=""
+                                  width="18" height="18"></span> BG Halaman
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- CANVAS WORKSPACE -->
+                        <div class="canvas-workspace" id="canvasWorkspaceView">
+                          <div class="promotion-canvas" id="canvasView">
+                            <!-- Dynamic elements will be dropped here -->
+                          </div>
+                        </div>
+
+                        <!-- PROPERTIES DRAWER (PANEL PENGATURAN) -->
+                        <div id="propertiesDrawerView" class="properties-drawer hidden">
+                          <div class="drawer-header">
+                            <span class="drawer-title" id="drawerTitleView">Pengaturan Elemen</span>
+                            <button class="drawer-close" id="closePropertiesDrawerView" title="Tutup">
+                              <img src="../static/image/icon/close.svg" alt="Tutup"
+                                style="width: 14px; height: 14px;" />
+                            </button>
+                          </div>
+                          <div class="drawer-content">
+                            <div class="prop-row">
+                              <label class="prop-label"
+                                style="font-size: 10.5px; font-weight: 700; color: #334155;">Warna Latar /
+                                Gradient</label>
+                              <div style="display: flex; gap: 8px; align-items: center; margin-top: 2px;">
+                                <div id="propColorSwatchView"
+                                  style="width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, #0F4C75, #38a0c4); border: 1.5px solid #cbd5e1; box-shadow: 0 1px 4px rgba(0,0,0,0.1);">
+                                </div>
+                                <span id="propColorHexView"
+                                  style="font-size: 11px; font-weight: 600; color: #0F4C75; background: #e0f2fe; padding: 2px 8px; border-radius: 10px;">#0F4C75
+                                  ➔ #38a0c4</span>
+                              </div>
+                            </div>
+                            <div class="prop-row-split" style="margin-top: 4px;">
+                              <div>
+                                <label class="prop-label" style="font-size: 10px; color: #64748b;">Lebar
+                                  (Width)</label>
+                                <input type="text" id="propWidthInputView" class="prop-input" value="100% (Full)"
+                                  readonly
+                                  style="font-size: 11px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; background: #f8fafc;" />
+                              </div>
+                              <div>
+                                <label class="prop-label" style="font-size: 10px; color: #64748b;">Sudut
+                                  (Radius)</label>
+                                <input type="text" id="propRadiusInputView" class="prop-input" value="12px" readonly
+                                  style="font-size: 11px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; background: #f8fafc;" />
+                              </div>
+                            </div>
+                            <div class="prop-row" style="margin-top: 4px;">
+                              <label class="prop-label" style="font-size: 10px; color: #64748b;">Teks Label
+                                Tombol</label>
+                              <input type="text" id="propTextInputView" class="prop-input"
+                                value="Konsultasi HR Gratis (WhatsApp)" readonly
+                                style="font-size: 11px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; background: #f8fafc;" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- SAVE TOAST BANNER -->
+                        <div id="saveToastView" class="builder-save-toast hidden">
+
+                          <span>Desain Halaman Promosi Berhasil Disimpan!</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Elemen GenUI Chatbot (Left: Text, Right: Phone) -->
+        <div class="feature-zigzag-card" id="card-genui">
+          <span class="feature-step-badge">Modul 8 / 8</span>
+          <div class="feature-text-column">
+            <div class="feature-icon-wrapper-hero">
+              <img src="../static/image/icon/elemen-genui-chatbot.svg" alt="GenUI Chatbot" class="feature-svg-hero" />
+            </div>
+            <h2 class="feature-title-hero">GenUI Chatbot Unit Usaha</h2>
+            <p class="feature-desc-hero">
+              Chatbot berbasis dokumen pengetahuan usaha yang dapat disematkan langsung pada
+              halaman promosi untuk melayani interaksi tanya-jawab dan konsultasi pengunjung secara instan.
+            </p>
+            <div class="feature-nav-group">
+              <button type="button" class="btn-hero-nav btn-hero-prev" onclick="scrollToFeatureCard('card-view')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+                <span>Sebelumnya</span>
+              </button>
+              <button type="button" class="btn-hero-nav btn-hero-next" onclick="scrollToFeatureCard('card-usaha')">
+                <span>Kembali ke Awal</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="feature-phone-column">
+            <div class="phone-3d-wrapper">
+              <div class="phone-3d-card">
+                <div class="phone-face phone-face-front">
+                  <div class="phone-punch-hole"></div>
+                  <div class="phone-screen-viewport">
+                    <div class="app app-autoplay-mode" id="appRootGenUI">
+                      <!-- VIRTUAL SIMULATED POINTER FOR AUTOPLAY -->
+                      <div class="simulated-pointer" id="simulatedPointerGenUI"></div>
+
+                      <!-- MAP CONTAINER LEAFLET -->
+                      <div id="mapGenUI">
+                        <div class="custom-zoom">
+                          <div class="zoom-btn" id="zoomInGenUI">+</div>
+                          <div class="zoom-btn" id="zoomOutGenUI">−</div>
+                        </div>
+                      </div>
+                      <div class="map-toggle" id="toggleMapGenUI">
+                        <img src="../static/image/icon/tile.svg" alt="Satelit" style="width: 16px; height: 16px;" />
+                        <span>Satelit</span>
+                      </div>
+                      <div class="topbar-container">
+                        <div class="topbar-search">
+                          <textarea id="searchingGenUI" placeholder="Cari Lokasi/Usaha" rows="1"></textarea>
+                          <button id="searchBtnGenUI" class="btn-search">Search</button>
+                        </div>
+                        <div class="open-profile" id="profileGenUI" title="Profil Pengguna">
+                          <img src="../static/image/logo.svg" alt="Profile" />
+                        </div>
+                      </div>
+                      <div class="cluster-wrapper">
+                        <div class="cluster-main" id="clusterMainGenUI">
+                          <span id="clusterTextGenUI">Kelurahan</span>
+                        </div>
+                        <div class="cluster-tool" id="clusterToolGenUI">☰</div>
+                      </div>
+
+                      <!-- ACTOR SWITCH & MAIN -->
+                      <div class="actor-switch">
+                        <img src="../static/image/actor/ico-show-usaha.svg" class="active" data-target="aktorUsahaGenUI"
+                          title="Mode Aktor Usaha">
+                        <img src="../static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasiGenUI"
+                          title="Mode Draw Lokasi">
+                      </div>
+                      <div class="actor-main active" id="aktorUsahaGenUI" title="Aktor Usaha">
+                        <span><img src="../static/image/actor/usaha.svg" alt="Usaha" /><br />Aktor<br />Usaha</span>
+                      </div>
+
+                      <!-- PROMOTION PAGE BUILDER / VIEWER CONTAINER -->
+                      <div id="promoBuilderContainerGenUI" class="promo-builder-full-overlay hidden">
+                        <!-- HEADER -->
+                        <header class="builder-header">
+                          <div class="header-left">
+                            <button class="btn-back" id="btnBackToMapGenUI" title="Kembali ke Peta">
+                              <img src="../static/image/icon/back.svg" alt="Kembali"
+                                style="width: 18px; height: 18px;" />
+                            </button>
+                            <h1 class="app-title" id="builderTitleGenUI">Sentra Retail &amp; Karir</h1>
+                          </div>
+                          <div class="header-right">
+                            <button id="btnToggleLayersGenUI" class="btn-icon hidden" title="Tampilkan Sistem Layer">
+                              <img src="../static/image/icon/layer.svg" alt="Layer"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnPaletteGenUI" class="btn-icon hidden" title="Palet Warna">
+                              <img src="../static/image/icon/pallete.svg" alt="Palet"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnUIKitGenUI" class="btn-icon hidden" title="UI Kit Block Templates">
+                              <img src="../static/image/icon/ui-kit.svg" alt="UI Kit"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnToggleModeGenUI" class="btn-icon" title="Ubah Mode (Preview/Edit)">
+                              <img id="modeIconGenUI" src="../static/image/icon/edit_builder.svg" alt="Edit"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                            <button id="btnSaveGenUI" class="btn-icon primary-glow hidden" title="Simpan Desain">
+                              <img src="../static/image/icon/save.svg" alt="Simpan"
+                                style="width: 22px; height: 22px;" />
+                            </button>
+                          </div>
+                        </header>
+
+                        <!-- TOOLBOX ROW (DRAGGABLE CHIPS) -->
+                        <div id="toolboxRowGenUI" class="toolbox-row hidden">
+                          <div class="toolbox-scroll" id="toolboxScrollGenUI">
+
+                            <div class="toolbox-chip" id="chipToolTitleGenUI" data-type="title">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-judul.svg" alt="" width="18"
+                                  height="18"></span> Judul
+                            </div>
+                            <div class="toolbox-chip" id="chipToolTextGenUI" data-type="text">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-paragraf.svg" alt=""
+                                  width="18" height="18"></span> Paragraf
+                            </div>
+
+
+
+                            <div class="toolbox-chip" id="chipToolImageGenUI" data-type="image">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-gambar.svg" alt=""
+                                  width="18" height="18"></span> Gambar
+                            </div>
+                            <div class="toolbox-chip" id="chipToolBoxGenUI" data-type="shape">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-box.svg" alt="" width="18"
+                                  height="18"></span> Box
+                            </div>
+                            <div class="toolbox-chip" id="chipToolContainerGenUI" data-type="container">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-kontainer.svg" alt=""
+                                  width="18" height="18"></span> Kontainer
+                            </div>
+                            <div class="toolbox-chip" id="chipToolColumnGenUI" data-type="column">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-kolom.svg" alt="" width="18"
+                                  height="18"></span> Kolom
+                            </div>
+                            <div class="toolbox-chip" id="chipToolRowGenUI" data-type="row">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-baris.svg" alt="" width="18"
+                                  height="18"></span> Baris
+                            </div>
+                            <div class="toolbox-chip" id="chipToolCarouselGenUI" data-type="carousel">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-carousel.svg" alt=""
+                                  width="18" height="18"></span> Carousel
+                            </div>
+                            <div class="toolbox-chip" id="chipToolButtonGenUI" data-type="button">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-tombol.svg" alt=""
+                                  width="18" height="18"></span> Tombol
+                            </div>
+                            <div class="toolbox-chip" id="chipToolMediaGenUI" data-type="media_embed">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-media.svg" alt="" width="18"
+                                  height="18"></span> Media Embed
+                            </div>
+                            <div class="toolbox-chip genui-chip" id="chipToolGenUIGenUI" data-type="genui_chatbot">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-genui-chatbot.svg" alt=""
+                                  width="18" height="18"></span> GenUI Chatbot
+                            </div>
+                            <div class="toolbox-chip genui-chip" id="chipToolBoxInteraktifGenUI"
+                              data-type="box_interaktif">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-box-interaktif.svg" alt=""
+                                  width="18" height="18"></span> Box Interaktif
+                            </div>
+                            <div class="toolbox-chip bg-setting-chip" id="chipToolBgGenUI">
+                              <span class="chip-icon"><img src="../static/image/icon/elemen-bg-halaman.svg" alt=""
+                                  width="18" height="18"></span> BG Halaman
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- CANVAS WORKSPACE -->
+                        <div class="canvas-workspace" id="canvasWorkspaceGenUI">
+                          <div class="promotion-canvas" id="canvasGenUI">
+                            <!-- Dynamic elements will be dropped here -->
+                          </div>
+                        </div>
+
+                        <!-- PROPERTIES DRAWER (PANEL PENGATURAN GENUI CHATBOT) -->
+                        <div id="propertiesDrawerGenUI" class="properties-drawer hidden" style="max-height: 320px;">
+                          <div class="drawer-header">
+                            <span class="drawer-title" id="drawerTitleGenUI">Pengaturan Elemen</span>
+                            <button class="drawer-close" id="closePropertiesDrawerGenUI" title="Tutup">
+                              <img src="../static/image/icon/close.svg" alt="Tutup"
+                                style="width: 14px; height: 14px;" />
+                            </button>
+                          </div>
+                          <div class="drawer-content" style="gap: 7px;">
+                            <!-- 1. Nama Asisten -->
+                            <div class="prop-row">
+                              <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Nama Bot
+                                Persona</label>
+                              <input type="text" id="propChatbotNameGenUI" class="prop-input"
+                                value="GenUI Assistant RAG" readonly
+                                style="font-size: 11px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; background: #f8fafc;" />
+                            </div>
+
+                            <!-- 2. Dimensi & Radius Slider -->
+                            <div class="prop-row-split" style="gap: 8px;">
+                              <div>
+                                <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Lebar &amp;
+                                  Tinggi</label>
+                                <input type="text" id="propGenUIDimensions" class="prop-input" value="100% × 250px"
+                                  readonly
+                                  style="font-size: 10px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 5px; width: 100%; box-sizing: border-box; background: #f8fafc;" />
+                              </div>
+                              <div>
+                                <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Radius Sudut
+                                  (<span id="propGenUIRadiusVal">12</span>px)</label>
+                                <input type="range" id="propGenUIRadiusSlider" min="4" max="24" value="12"
+                                  class="prop-range" style="height: 4px;" />
+                              </div>
+                            </div>
+
+                            <!-- 3. Palet Warna Header & Bubble -->
+                            <div class="prop-row-split" style="gap: 8px;">
+                              <div>
+                                <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Warna
+                                  Header</label>
+                                <div style="display: flex; gap: 5px; align-items: center; margin-top: 2px;">
+                                  <div id="propGenUIHeaderSwatch"
+                                    style="width: 20px; height: 20px; border-radius: 4px; background: linear-gradient(135deg, #0F4C75, #38a0c4); border: 1.5px solid #0F4C75; cursor: pointer;"
+                                    title="Ocean Deep"></div>
+                                  <div id="propGenUIHeaderSwatch2"
+                                    style="width: 20px; height: 20px; border-radius: 4px; background: linear-gradient(135deg, #0F4C75, #0284c7); border: 1px solid #cbd5e1; cursor: pointer;"
+                                    title="Electric Teal"></div>
+                                  <div id="propGenUIHeaderSwatch3"
+                                    style="width: 20px; height: 20px; border-radius: 4px; background: linear-gradient(135deg, #065f46, #10b981); border: 1px solid #cbd5e1; cursor: pointer;"
+                                    title="Emerald Tech"></div>
+                                </div>
+                              </div>
+                              <div>
+                                <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Warna Bubble
+                                  Bot</label>
+                                <div style="display: flex; gap: 5px; align-items: center; margin-top: 2px;">
+                                  <div id="propGenUIBotSwatch"
+                                    style="width: 20px; height: 20px; border-radius: 4px; background: #38a0c4; border: 1.5px solid #0F4C75; cursor: pointer;"
+                                    title="Sky Azure"></div>
+                                  <div id="propGenUIBotSwatch2"
+                                    style="width: 20px; height: 20px; border-radius: 4px; background: linear-gradient(135deg, #0284c7, #38a0c4); border: 1px solid #cbd5e1; cursor: pointer;"
+                                    title="Gradient Azure"></div>
+                                  <div id="propGenUIBotSwatch3"
+                                    style="width: 20px; height: 20px; border-radius: 4px; background: #10b981; border: 1px solid #cbd5e1; cursor: pointer;"
+                                    title="Emerald"></div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <!-- 4. RAG Knowledge Base Document Upload -->
+                            <div
+                              style="background: #f0f7f9; border: 1px solid #bddce7; border-radius: 8px; padding: 6px 8px; margin-top: 1px;">
+                              <label class="prop-label"
+                                style="font-size: 9.5px; font-weight: 700; color: #2c5d6b; display: flex; align-items: center; gap: 4px;">
+                                Sumber Data RAG (Dokumen Pengetahuan)
+                              </label>
+                              <div id="btnUploadDocGenUI"
+                                style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; border: 1.5px dashed #38a0c4; border-radius: 6px; padding: 5px; margin-top: 3px; font-size: 10px; font-weight: 600; color: #0F4C75; cursor: pointer;">
+                                Upload Dokumen RAG (PDF/CSV/TXT)
+                              </div>
+                              <div id="ragDocUploadStatusGenUI"
+                                style="font-size: 9px; color: #38a0c4; margin-top: 3px; font-weight: 600; display: none;">
+                                [OK] Katalog_Retail_dan_Karir_2026.pdf (48 Chunks terindeks Pinecone)
+                              </div>
+                            </div>
+
+                            <!-- 5. Parameter Model AI (Temperature & Max Tokens) -->
+                            <div class="prop-row-split" style="gap: 8px;">
+                              <div>
+                                <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Temperature
+                                  (<span id="propGenUITempVal">0.3</span>)</label>
+                                <input type="range" id="propGenUITempSlider" min="0.1" max="1.0" step="0.1" value="0.3"
+                                  class="prop-range" style="height: 4px;" />
+                              </div>
+                              <div>
+                                <label class="prop-label" style="font-size: 9.5px; color: #64748b;">Max
+                                  Tokens</label>
+                                <input type="text" class="prop-input" value="1024 Tokens" readonly
+                                  style="font-size: 10px; padding: 3px 6px; border: 1px solid #cbd5e1; border-radius: 5px; width: 100%; box-sizing: border-box; background: #f8fafc;" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- SAVE TOAST BANNER -->
+                        <div id="saveToastGenUI" class="builder-save-toast hidden">
+
+                          <span>Desain Halaman Promosi Berhasil Disimpan!</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-face phone-face-back back-titanium">
+                  <div class="phone-back-brand"><img src="../static/image/logo.svg" alt="Brand Logo 2211080"
+                      class="phone-back-logo"></div>
+                  <div class="phone-back-glare"></div>
+                </div>
+                <div class="phone-side phone-side-left">
+                  <div class="side-button btn-action"></div>
+                  <div class="side-button btn-vol-up"></div>
+                  <div class="side-button btn-vol-down"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-right">
+                  <div class="side-button btn-power"></div>
+                  <div class="antenna-band top-band"></div>
+                  <div class="antenna-band bottom-band"></div>
+                </div>
+                <div class="phone-side phone-side-top">
+                  <div class="mic-hole"></div>
+                  <div class="antenna-band left-band"></div>
+                </div>
+                <div class="phone-side phone-side-bottom">
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                  <div class="usbc-port">
+                    <div class="usbc-pin"></div>
+                  </div>
+                  <div class="speaker-grille"><span></span><span></span><span></span></div>
+                </div>
+                <div class="phone-solid-chassis">
+                  <div class="chassis-layer l-m9"></div>
+                  <div class="chassis-layer l-m8"></div>
+                  <div class="chassis-layer l-m7"></div>
+                  <div class="chassis-layer l-m6"></div>
+                  <div class="chassis-layer l-m5"></div>
+                  <div class="chassis-layer l-m4"></div>
+                  <div class="chassis-layer l-m3"></div>
+                  <div class="chassis-layer l-m2"></div>
+                  <div class="chassis-layer l-m1"></div>
+                  <div class="chassis-layer l-0"></div>
+                  <div class="chassis-layer l-p1"></div>
+                  <div class="chassis-layer l-p2"></div>
+                  <div class="chassis-layer l-p3"></div>
+                  <div class="chassis-layer l-p4"></div>
+                  <div class="chassis-layer l-p5"></div>
+                  <div class="chassis-layer l-p6"></div>
+                  <div class="chassis-layer l-p7"></div>
+                  <div class="chassis-layer l-p8"></div>
+                  <div class="chassis-layer l-p9"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Clean Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>© 2026 Sistem milik 2211080. All Rights Reserved.</span>
+      <span>Sistem milik 2211080</span>
+    </div>
+  </footer>
+
+  <!-- Leaflet GIS Map Library -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- 3D Smartphone & Real Spatial GIS Controller -->
+  <script src="engine-js/phone-3d.js"></script>
+
+  <!-- Mobile Hamburger Menu & Looping Typewriter Scripts -->
+  <script>
+    // Smooth Scroll Navigation between Feature Cards
+    window.scrollToFeatureCard = function (targetId) {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+
+    // Mobile Hamburger Toggle (☰ / ✕)
+    (function initMobileMenu() {
+      const toggleBtn = document.getElementById('mobileMenuToggle');
+      const siteNav = document.getElementById('siteNav');
+      const menuIcon = document.getElementById('menuIcon');
+      if (!toggleBtn || !siteNav) return;
+
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = siteNav.classList.toggle('open');
+        toggleBtn.classList.toggle('active', isOpen);
+        if (menuIcon) menuIcon.textContent = isOpen ? '✕' : '☰';
+      });
+
+      siteNav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          siteNav.classList.remove('open');
+          toggleBtn.classList.remove('active');
+          if (menuIcon) menuIcon.textContent = '☰';
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!siteNav.contains(e.target) && !toggleBtn.contains(e.target)) {
+          siteNav.classList.remove('open');
+          toggleBtn.classList.remove('active');
+          if (menuIcon) menuIcon.textContent = '☰';
+        }
+      });
+    })();
+
+    // Hero Title Looping Typewriter Script (15-20s cycle)
+    (function initHeroTypewriter() {
+      const line1El = document.getElementById('typewriterLine1');
+      const line2El = document.getElementById('typewriterLine2');
+      if (!line1El || !line2El) return;
+
+      const phrases = [
+        { l1: "Web GIS & AI Spasial", l2: "Ekosistem Usaha Lokal" },
+        { l1: "Pemodelan Knowledge Graph", l2: "Pemberdayaan Usaha Lokal" },
+        { l1: "Chatbot RAG Spasial", l2: "Peluang Usaha Mandiri" }
+      ];
+
+      let currentIdx = 0;
+      const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+      async function startLoop() {
+        while (true) {
+          const item = phrases[currentIdx];
+
+          // Clear both lines before typing
+          line1El.textContent = "";
+          line2El.textContent = "";
+
+          // 1. Type Line 1 character by character
+          for (let i = 0; i <= item.l1.length; i++) {
+            line1El.textContent = item.l1.slice(0, i);
+            await wait(55);
+          }
+
+          await wait(180);
+
+          // 2. Type Line 2 character by character
+          for (let i = 0; i <= item.l2.length; i++) {
+            line2El.textContent = item.l2.slice(0, i);
+            await wait(55);
+          }
+
+          // 3. Hold complete title for 13.5 seconds so it is clearly readable (Total cycle ~18 seconds)
+          await wait(13500);
+
+          // 4. Erase Line 2 (backspace animation)
+          for (let i = item.l2.length; i >= 0; i--) {
+            line2El.textContent = item.l2.slice(0, i);
+            await wait(25);
+          }
+
+          // 5. Erase Line 1 (backspace animation)
+          for (let i = item.l1.length; i >= 0; i--) {
+            line1El.textContent = item.l1.slice(0, i);
+            await wait(25);
+          }
+
+          // Pause before next typing round
+          await wait(600);
+
+          currentIdx = (currentIdx + 1) % phrases.length;
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startLoop);
+      } else {
+        startLoop();
+      }
+    })();
+  </script>
+</body>
+
+</html>

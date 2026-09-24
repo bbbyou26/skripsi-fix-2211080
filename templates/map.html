@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Layout & Komponen Utama -->
+  <link rel="stylesheet" href="/static/css/layout.css" />
+  <link rel="stylesheet" href="/static/css/actor_popup.css" />
+  <link rel="stylesheet" href="/static/css/actor_panel.css" />
+  <!-- Form Edit Aktor -->
+  <link rel="stylesheet" href="/static/css/edit_business.css" />
+  <link rel="stylesheet" href="/static/css/edit_area.css" />
+  <!-- Fitur Chatbot Spasial -->
+  <link rel="stylesheet" href="/static/css/spatial_chat.css" />
+  <!-- Profil Pengguna -->
+  <link rel="stylesheet" href="/static/css/user_profile.css" />
+
+  <link rel="icon" type="image/x-icon" href="/static/image/icon.ico">
+</head>
+
+<body
+  class="{% if not session.get('user', '').endswith(':admin@2211080.com') and not session.get('user', '').endswith(':admin') %}non-admin{% endif %}">
+  <script>
+    window.currentUser = "{{ session.get('user', '') }}";
+    window.isAdmin = window.currentUser.includes(':admin');
+  </script>
+  <div class="app">
+    <div id="map">
+      <div class="custom-zoom">
+        <div class="zoom-btn" id="zoomIn">+</div>
+        <div class="zoom-btn" id="zoomOut">−</div>
+      </div>
+      <!-- DRAWING CONTROLS -->
+      <div class="controls-left">
+        <button class="btn-circle active" id="draw-mode-btn" title="Mode Gambar">
+          <img src="/static/image/icon/edit_tool.svg" alt="Mode Gambar" style="width: 22px; height: 22px;" />
+        </button>
+        <button class="btn-circle" id="pan-mode-btn" title="Mode Geser (Pan)">
+          <img src="/static/image/icon/hand_tool.svg" alt="Mode Geser (Pan)" style="width: 22px; height: 22px;" />
+        </button>
+        <button class="btn-circle" id="undo-btn" title="Undo (Ctrl+Z)" disabled>
+          <img src="/static/image/icon/undo.svg" alt="Undo" style="width: 18px; height: 18px;" />
+        </button>
+        <button class="btn-circle" id="redo-btn" title="Redo (Ctrl+Y)" disabled>
+          <img src="/static/image/icon/redo.svg" alt="Redo" style="width: 18px; height: 18px;" />
+        </button>
+        <button class="btn-circle btn-cancel" id="cancel-btn" title="Cancel Draw" style="display: none">
+          <img src="/static/image/icon/close.svg" alt="Cancel" style="width: 18px; height: 18px;" />
+        </button>
+      </div>
+    </div>
+    <div class="map-toggle" id="toggleMap">
+      <img src="/static/image/icon/tile.svg" alt="Satelit" style="width: 20px; height: 20px;" />
+      Satelit
+    </div>
+    <div class="topbar-container">
+      <div class="topbar-search">
+        <textarea id="searching" placeholder="Cari Lokasi/Usaha"></textarea>
+        <button id="searchBtn" class="btn-search">Search</button>
+      </div>
+      <div class="open-profile" id="profile">
+        <img src="data:image/*;base64,{{ user.foto }}" alt="Profile" />
+      </div>
+    </div>
+
+    <!-- PROFILE WRAPPER -->
+    <div class="profile-wrapper" id="profileWrapper">
+      <!-- TOP PROFILE -->
+      <div class="top-profile">
+        <div id="imgProfile">
+          <img src="data:image/*;base64,{{ user.foto }}" alt="Profile" />
+        </div>
+        <div class="name-container">
+          <label class="nama">{{ user.name }}</label>
+          <label class="status">User</label>
+        </div>
+      </div>
+
+      <!-- MENU PROFIL -->
+      <div class="menu-profil" id="Profil">Profil Saya</div>
+      {% if session.get('user', '').endswith(':admin') or session.get('user', '').endswith(':admin@2211080.com') %}
+      <div class="menu-profil" id="AksesIzin" onclick="window.togglePermissionOverlay()">Akses Izin</div>
+      {% else %}
+      <div class="menu-profil"
+        style="display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer;"
+        onclick="const chk = document.getElementById('toggleIzinkanAkses'); if (event.target !== chk) { chk.checked = !chk.checked; chk.dispatchEvent(new Event('change')); } event.stopPropagation();">
+        <span>Izinkan Akses</span>
+        <input type="checkbox" id="toggleIzinkanAkses" class="custom-checkbox" />
+      </div>
+      {% endif %}
+      <div class="menu-profil" id="Keluar">Keluar</div>
+    </div>
+
+    <div class="cluster-wrapper">
+      <div class="cluster-main" id="clusterMain">
+        <span id="clusterText">Kabupaten / Kota</span>
+      </div>
+      <div class="cluster-tool" id="clusterTool">☰</div>
+      <div class="cluster-options" id="clusterOptions">
+        <div class="cluster-option">RT / RW</div>
+        <div class="cluster-option">Kelurahan</div>
+        <div class="cluster-option">Kecamatan</div>
+        <div class="cluster-option">Kabupaten / Kota</div>
+      </div>
+    </div>
+    <!-- ACTOR MAIN (YANG BESAR) -->
+
+    <!-- USAHA (DEFAULT) -->
+    <!-- ICON MINI SWITCH -->
+    <div class="actor-switch">
+      <img src="/static/image/actor/ico-show-usaha.svg" data-target="aktorUsaha">
+      <img src="/static/image/actor/ico-show-lokasi.svg" data-target="aktorLokasi">
+    </div>
+
+    <div class="actor-main active" id="aktorUsaha">
+      <span>
+        <img src="/static/image/actor/usaha.svg" />
+        <br />Aktor<br />Usaha
+      </span>
+    </div>
+
+
+
+    <!-- LOKASI -->
+    <div class="actor-main hidden" id="aktorLokasi">
+      <span>
+        <img src="/static/image/actor/draw-location.svg" />
+        <br />Draw<br />Lokasi
+      </span>
+    </div>
+
+
+
+    <!-- LOCATION OVERLAY -->
+    <div class="delete-confirm-overlay location-overlay hidden" id="locationOverlay">
+      <div class="delete-confirm-modal location-modal">
+        <div class="delete-confirm-icon location-icon">
+          <img src="/static/image/icon/ai-pin.svg" class="delete-confirm-svg location-svg" alt="Pin" />
+        </div>
+        <div class="delete-confirm-title location-title">Apakah Anda ingin mengubah lokasi?</div>
+        <div class="delete-confirm-desc location-desc">
+          Perubahan lokasi akan mempengaruhi data yang ditampilkan.
+        </div>
+        <div class="delete-confirm-actions location-actions">
+          <button class="btn-confirm btn-location no" onclick="closeLocation()">Tidak</button>
+          <button class="btn-confirm btn-location yes" onclick="confirmLocation()">Ya</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT OVERLAY USAHA -->
+    <div class="edit-overlay" id="editUsahaOverlay">
+      <div class="edit-card">
+        <div class="edit-header">
+          <div class="edit-title">Usaha</div>
+          <div class="close-edit" onclick="closeEditOverlay(this)" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Nama</label>
+          <textarea placeholder="Masukkan nama usaha"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Foto Visual</label>
+          <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+            <button type="button" class="btn-image-upload"
+              style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <img src="/static/image/icon/images.svg" alt="Upload"
+                style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Foto
+            </button>
+            <input type="file" id="fileUsaha" accept="image/*"
+              onchange="previewImageEdit(event, 'previewUsaha')"
+              style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+          </div>
+          <div class="preview" id="previewUsaha">
+            <img src="" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Fokus Usaha</label>
+          <textarea placeholder="Masukkan fokus usaha / pekerjaan"></textarea>
+        </div>
+
+        <div class="form-group notes-section-usaha">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="label" style="margin-bottom: 0;">Aktivitas</label>
+            <button type="button" class="btn-add-activity" id="btnUsahaAddActivity" onclick="window.onAddUsahaActivityClick()" style="font-size: 11px; padding: 5px 12px; background: #10B981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">+ Tambah Aktivitas</button>
+          </div>
+
+          <!-- List Aktivitas Usaha -->
+          <div id="usahaActivityListContainer" class="usaha-activity-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-save">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDALONE ACTIVITY FORM OVERLAY (Buka Modal Sendiri saat Tambah/Edit) -->
+    <div class="edit-overlay" id="editUsahaActivityOverlay" style="z-index: 10005;">
+      <div class="edit-card">
+        <div class="edit-header">
+          <div class="edit-title" id="txtUsahaActivityFormTitle">Rincian Aktivitas</div>
+          <div class="close-edit" onclick="window.onCancelUsahaActivityForm()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </div>
+        </div>
+
+        <div class="notes-checklist">
+          <label class="notes-check-card" id="cardUsahaKampanye">
+            <input type="checkbox" id="checkUsahaKampanye" class="custom-checkbox" onchange="window.onUsahaNoteTypeChange('kampanye')">
+            <img src="/static/image/icon/campaign.svg" class="notes-check-icon" alt="Kampanye">
+            <span class="notes-check-label">Kampanye</span>
+          </label>
+
+          <label class="notes-check-card" id="cardUsahaLowongan">
+            <input type="checkbox" id="checkUsahaLowongan" class="custom-checkbox" onchange="window.onUsahaNoteTypeChange('lowongan')">
+            <img src="/static/image/icon/job-portal.svg" class="notes-check-icon" alt="Lowongan">
+            <span class="notes-check-label">Lowongan</span>
+          </label>
+        </div>
+
+        <div class="notes-detail-inputs">
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Nama Aktivitas</label>
+            <input type="text" id="inputUsahaNotesName" class="input" placeholder="Contoh: Promo Jualan Manga / Lowongan Kasir..." style="font-size: 12px; padding: 6px 10px;">
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Deskripsi</label>
+            <textarea id="inputUsahaNotesText" placeholder="Masukkan deskripsi / rincian..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Upload Gambar / Poster</label>
+            <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+              <button type="button" class="btn-image-upload"
+                style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <img src="/static/image/icon/images.svg" alt="Upload"
+                  style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Gambar
+              </button>
+              <input type="file" id="fileUsahaNotesImg" accept="image/*"
+                onchange="previewImageEdit(event, 'previewUsahaNotesImg')"
+                style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+            </div>
+            <div class="preview" id="previewUsahaNotesImg">
+              <img src="" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Batas Waktu</label>
+            <div class="timeframe-container">
+              <div class="timeframe-box">
+                <span class="timeframe-sublabel">Dari:</span>
+                <input type="datetime-local" id="inputUsahaNotesStart" class="input date-input">
+              </div>
+              <div class="timeframe-box">
+                <span class="timeframe-sublabel">Sampai dengan:</span>
+                <input type="datetime-local" id="inputUsahaNotesEnd" class="input date-input">
+              </div>
+            </div>
+          </div>
+
+          <!-- TOGGLE CTA SECTION -->
+          <div class="form-group" style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Tombol CTA (Call to Action)</label>
+            
+            <div class="notes-checklist cta-checklist">
+              <label class="notes-check-card" id="cardUsahaCtaWa">
+                <input type="checkbox" id="checkUsahaCtaWa" class="custom-checkbox" onchange="window.onUsahaCtaChange('wa')">
+                <img src="/static/image/icon/phone.svg" class="notes-check-icon" alt="WhatsApp">
+                <span class="notes-check-label">WhatsApp</span>
+              </label>
+
+              <label class="notes-check-card" id="cardUsahaCtaPromo">
+                <input type="checkbox" id="checkUsahaCtaPromo" class="custom-checkbox" onchange="window.onUsahaCtaChange('promo')">
+                <img src="/static/image/icon/view.svg" class="notes-check-icon" alt="Halaman Promosi">
+                <span class="notes-check-label">Halaman Promosi</span>
+              </label>
+
+              <label class="notes-check-card" id="cardUsahaCtaUrl">
+                <input type="checkbox" id="checkUsahaCtaUrl" class="custom-checkbox" onchange="window.onUsahaCtaChange('url')">
+                <img src="/static/image/icon/browser.svg" class="notes-check-icon" alt="Link URL">
+                <span class="notes-check-label">Link URL</span>
+              </label>
+            </div>
+
+            <!-- Input Dinamis CTA -->
+            <div id="containerUsahaCtaWa" class="cta-input-box hidden" style="margin-top: 8px;">
+              <label class="label" style="font-size: 10px; color: #555;">Nomor WhatsApp</label>
+              <input type="text" id="inputUsahaCtaWa" class="input" placeholder="Contoh: 08123456789">
+            </div>
+
+            <div id="containerUsahaCtaUrl" class="cta-input-box hidden" style="margin-top: 8px;">
+              <label class="label" style="font-size: 10px; color: #555;">Tautan / Link Website URL</label>
+              <input type="url" id="inputUsahaCtaUrl" class="input" placeholder="Contoh: https://website-anda.com">
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn-save" onclick="window.onSaveUsahaActivityModal()">Simpan Aktivitas</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- EDIT OVERLAY LOKASI -->
+    <div class="edit-overlay" id="editLokasiOverlay">
+      <div class="edit-card">
+        <div class="edit-header">
+          <div class="edit-title">Lokasi</div>
+          <div class="close-edit" onclick="closeEditOverlay(this)" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </div>
+        </div>
+
+        <div class="form-group admin-only-field">
+          <label class="label">Nama</label>
+          <textarea placeholder="Masukkan nama lokasi"></textarea>
+        </div>
+
+        <div class="form-group admin-only-field">
+          <label class="label">Foto Visual</label>
+          <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+            <button type="button" class="btn-image-upload"
+              style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <img src="/static/image/icon/images.svg" alt="Upload"
+                style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Foto
+            </button>
+            <input type="file" id="fileLokasi" accept="image/*"
+              onchange="previewImageEdit(event, 'previewLokasi')"
+              style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+          </div>
+          <div class="preview" id="previewLokasi">
+            <img src="" />
+          </div>
+        </div>
+
+        <div class="form-group admin-only-field" style="position: relative;">
+          <label class="label">Warna</label>
+          <div id="lokasiColorTrigger" class="fill-trigger-box" onclick="window.toggleLokasiColorPopover(event)" title="Klik untuk ubah warna solid lokasi">
+            <div id="lokasiColorSwatch" class="fill-trigger-swatch" style="background: #38a0c4;"></div>
+            <span id="lokasiColorHex" class="fill-trigger-hex">#38A0C4</span>
+            <span id="lokasiColorOpacity" class="fill-trigger-opacity">100%</span>
+          </div>
+
+          <!-- Floating Popover Box for Lokasi Solid Color -->
+          <div id="lokasiColorPopoverBox" class="fill-popover-box hidden" onclick="event.stopPropagation()">
+            <div class="fill-popover-header">
+              <span class="fill-popover-title">Fill / Warna</span>
+              <button type="button" class="fill-popover-close" onclick="window.closeLokasiColorPopover()" title="Tutup">
+                <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 14px; height: 14px;" />
+              </button>
+            </div>
+            
+            <!-- Solid Color Controls -->
+            <div class="fs-color-row">
+              <input type="color" id="lokasiFillColorInput" class="fs-swatch-input" value="#38a0c4" oninput="window.onLokasiColorPickerInput(this.value)" title="Pilih warna" />
+              <input type="text" id="lokasiFillHexInput" class="fs-hex-input" maxlength="7" value="#38A0C4" oninput="window.onLokasiColorHexInput(this.value)" placeholder="#38A0C4" />
+              <input type="number" id="lokasiFillOpacityInput" class="fs-opacity-input" min="1" max="100" value="100" oninput="window.onLokasiColorOpacityInput(this.value)" />
+              <span class="fs-percent">%</span>
+            </div>
+
+            <div class="fs-slider-row">
+              <input type="range" id="lokasiFillOpacitySlider" min="1" max="100" value="100" class="prop-range" oninput="window.onLokasiColorOpacitySlider(this.value)" />
+            </div>
+          </div>
+
+          <!-- Hidden color input for form serialization compatibility -->
+          <input type="hidden" id="lokasiColorInput" class="input color-input" value="#38a0c4" />
+        </div>
+
+        <!-- COORDINATE CONTAINER FOR POLYGON -->
+        <div id="polygonCoordsContainer" class="form-group admin-only-field hidden">
+          <label class="label">Titik Koordinat (Lat, Lon)</label>
+          <div class="coords-list-wrapper">
+            <div class="coords-list" id="coordsList">
+              <!-- Dynamic content -->
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group admin-only-field">
+          <label class="label">Marker Type</label>
+          <select>
+            <option>Pemukiman</option>
+            <option>Lahan</option>
+            <option>Perairan</option>
+          </select>
+        </div>
+
+        <div class="form-group admin-only-field">
+          <label class="label">Populasi</label>
+          <input type="text" class="input input-populasi" placeholder="Masukkan angka" />
+        </div>
+
+        <div class="form-group admin-only-field admin-activity-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label class="label" style="margin-bottom: 0;">Catatan / Aktivitas</label>
+            <button type="button" class="btn-add-activity" id="btnLokasiAddActivity" onclick="window.onAddLokasiActivityClick()" style="font-size: 11px; padding: 5px 12px; background: #10B981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">+ Tambah Catatan</button>
+          </div>
+
+          <!-- List Aktivitas Lokasi -->
+          <div id="lokasiActivityListContainer" class="lokasi-activity-list" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;"></div>
+        </div>
+
+        <div class="user-notes-section">
+          <div class="form-group">
+            <label class="label">Nama Catatan</label>
+            <input type="text" class="input" id="inputLokasiNotesNameUser" placeholder="Masukkan judul catatan (mis: Catatan Lahan)" />
+          </div>
+
+          <div class="form-group">
+            <label class="label">Foto Catatan / Lampiran</label>
+            <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+              <button type="button" class="btn-image-upload"
+                style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <img src="/static/image/icon/images.svg" alt="Upload"
+                  style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Foto Catatan
+              </button>
+              <input type="file" id="fileLokasiNotesUser" accept="image/*"
+                onchange="previewImageEdit(event, 'previewLokasiNotesUser')"
+                style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+            </div>
+            <div class="preview" id="previewLokasiNotesUser">
+              <img src="" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label">Isi Catatan / Deskripsi</label>
+            <textarea id="inputLokasiNotesTextUser" placeholder="Catatan tambahan lokasi"></textarea>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-save">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDALONE LOKASI ACTIVITY FORM OVERLAY -->
+    <div class="edit-overlay" id="editLokasiActivityOverlay" style="z-index: 10005;">
+      <div class="edit-card">
+        <div class="edit-header">
+          <div class="edit-title" id="txtLokasiActivityFormTitle">Rincian Catatan Lokasi</div>
+          <div class="close-edit" onclick="window.onCancelLokasiActivityForm()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </div>
+        </div>
+
+        <div class="notes-detail-inputs">
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Nama Catatan</label>
+            <input type="text" id="inputLokasiNotesName" class="input" placeholder="Masukkan judul catatan..." style="font-size: 12px; padding: 6px 10px;">
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Deskripsi</label>
+            <textarea id="inputLokasiNotesText" placeholder="Masukkan deskripsi / rincian catatan..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="label" style="font-size: 11px; color: #2c5d6b;">Upload Gambar / Lampiran</label>
+            <div class="image-upload-wrapper" style="position: relative; width: 100%;">
+              <button type="button" class="btn-image-upload"
+                style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <img src="/static/image/icon/images.svg" alt="Upload"
+                  style="width: 16px; height: 16px; opacity: 0.7;" /> Klik untuk Upload Gambar
+              </button>
+              <input type="file" id="fileLokasiNotesImg" accept="image/*"
+                onchange="previewImageEdit(event, 'previewLokasiNotesImg')"
+                style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+            </div>
+            <div class="preview" id="previewLokasiNotesImg">
+              <img src="" />
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn-save" onclick="window.onSaveLokasiActivityModal()">Simpan Catatan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHOTO OVERLAY MODAL -->
+    <div id="photoOverlay" class="photo-overlay hidden" onclick="this.classList.add('hidden')">
+      <div class="photo-modal-content">
+        <img id="fullPhoto" src="" onclick="event.stopPropagation()" />
+      </div>
+    </div>
+
+    <!-- DELETE CONFIRM OVERLAY -->
+    <div class="delete-confirm-overlay hidden" id="deleteConfirmOverlay">
+      <div class="delete-confirm-modal">
+        <div class="delete-confirm-icon">
+          <img src="/static/image/icon/delete.svg" class="delete-confirm-svg" alt="Delete" />
+        </div>
+        <div class="delete-confirm-title">Hapus Aktor?</div>
+        <div class="delete-confirm-desc">
+          Aktor ini akan dihapus dari peta secara permanen dan tidak bisa dikembalikan.
+        </div>
+        <div class="delete-confirm-actions">
+          <button class="btn-confirm no" onclick="cancelDeleteMarker()">Batal</button>
+          <button class="btn-confirm yes" onclick="confirmDeleteMarker()">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DELETE ACTIVITY CONFIRM OVERLAY -->
+    <div class="delete-confirm-overlay hidden" id="deleteActivityConfirmOverlay" style="z-index: 10006;">
+      <div class="delete-confirm-modal">
+        <div class="delete-confirm-icon">
+          <img src="/static/image/icon/delete.svg" class="delete-confirm-svg" alt="Delete" />
+        </div>
+        <div class="delete-confirm-title">Hapus Aktivitas?</div>
+        <div class="delete-confirm-desc">
+          Aktivitas ini akan dihapus secara permanen dari daftar aktivitas usaha.
+        </div>
+        <div class="delete-confirm-actions">
+          <button class="btn-confirm no" onclick="window.cancelDeleteUsahaActivity()">Batal</button>
+          <button class="btn-confirm yes" onclick="window.confirmDeleteUsahaActivity()">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="chatbot">
+      <span>
+        <img src="/static/image/actor/chatbot.svg" alt="Chatbot" />
+      </span>
+    </div>
+
+    <!-- Chatbot Overlay UI -->
+    <div id="chatbotOverlay" class="chatbot-overlay hidden">
+      <div class="chatbot-card">
+        <div class="chatbot-header" style="align-items: center; border-bottom: none; padding-bottom: 12px;">
+          <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/actor/chatbot.svg" alt="AI Agent" class="bot-icon" />
+            <div class="bot-info">
+              <span class="bot-name">Chatbot AI</span>
+              <span class="bot-status">Online • Siap membantu</span>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: flex-end; gap: 8px;">
+            <div class="jc-toggle-wrapper">
+              <img src="/static/image/icon/job-mode.svg" class="jc-peeking-bot" alt="Bot" />
+              <button id="mainJcToggle" class="btn-job-creation-toggle" onclick="window.toggleJobCreationMenu()">Cipta Kerja</button>
+            </div>
+            <button class="close-chatbot" onclick="window.toggleChatbot()" title="Tutup">
+              <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Submenu Chips (Hidden by Default) -->
+        <div id="jobCreationSubMenu" class="jc-submenu-container hidden">
+          <div class="jc-chip" id="chipSumberDaya"
+            style="display: flex; align-items: center; padding: 0; overflow: hidden;">
+            <div onclick="window.setChatMode('sumber-daya', document.getElementById('chipSumberDaya'))"
+              style="padding: 6px 10px; cursor: pointer;">Skill & Sumber Daya</div>
+            <div style="width: 1px; height: 14px; background: currentColor; opacity: 0.3;"></div>
+            <div onclick="document.getElementById('chatImgInput').click()"
+              style="padding: 6px 10px; cursor: pointer; display: flex; align-items: center;"
+              title="Upload Gambar Produk">
+              <img src="/static/image/icon/images.svg" alt="Images" style="width: 18px; height: 18px;" />
+            </div>
+          </div>
+          <button class="jc-chip" onclick="window.setChatMode('celah-masalah', this)">Celah Masalah & Kebutuhan</button>
+          <button class="jc-chip" onclick="window.setChatMode('analisis', this)">Analisis Teknis</button>
+          <button class="jc-chip" onclick="window.setChatMode('simulasi-modal', this)">Simulasi Modal &
+            Kelayakan</button>
+          <button class="jc-chip" onclick="window.setChatMode('simulasi-lapangan-kerja', this)">Simulasi Lapangan
+            Kerja</button>
+        </div>
+
+        <div class="chatbot-messages" id="chatMessages">
+          <div class="message bot">
+            <div class="bubble">Halo! Saya Chatbot AI 2211080. Ada yang bisa saya bantu terkait analisis wilayah atau
+              data
+              aktor?</div>
+          </div>
+        </div>
+
+        <div class="chatbot-input-container">
+          <!-- Location Target Badge -->
+          <div id="locationTargetBadge" class="location-badge hidden">
+            <span>Lokasi telah tertarget</span>
+            <button class="remove-target" onclick="removeLocationTarget()" title="Hapus Target">
+              <img src="/static/image/icon/close.svg" alt="Hapus" style="width: 12px; height: 12px; filter: brightness(0) invert(1);" />
+            </button>
+          </div>
+
+          <!-- Image Preview Container -->
+          <div id="chatImagePreview" class="chat-image-preview hidden"
+            style="position: relative; width: fit-content; margin-bottom: -4px;">
+            <img id="chatPreviewImg" src=""
+              style="height: 60px; border-radius: 8px; border: 1px solid #ccc; object-fit: cover;" />
+            <button onclick="window.removeChatImage()" title="Hapus Gambar"
+              style="position: absolute; top: -6px; right: -6px; background: #ff6b6b; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;">
+              <img src="/static/image/icon/close.svg" alt="Hapus" style="width: 11px; height: 11px; filter: brightness(0) invert(1);" />
+            </button>
+          </div>
+
+          <div class="input-wrapper">
+            <button id="btnAiPin" class="ai-pin-btn" title="Targetkan Lokasi">
+              <img src="/static/image/icon/ai-pin.svg" alt="Pin" />
+            </button>
+
+            <input type="file" id="chatImgInput" accept="image/*" style="display: none;"
+              onchange="window.handleChatImageUpload(event)" />
+
+            <textarea id="chatInput" placeholder="Tanyakan sesuatu..." rows="1"></textarea>
+            <button class="send-chat" title="Kirim"><img src="/static/image/icon/send.svg" alt="Send"
+                style="width: 18px; height: 18px; display: block;" /></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERMISSION OVERLAY UI -->
+    <div id="permissionOverlay" class="chatbot-overlay hidden"
+      onclick="if(event.target === this) window.togglePermissionOverlay()">
+      <div class="chatbot-card">
+        <div class="chatbot-header" style="align-items: center; border-bottom: none; padding-bottom: 8px;">
+          <div class="header-left" style="display: flex; align-items: center; gap: 10px;">
+            <img src="/static/image/icon/access.svg" alt="Akses Izin" class="bot-icon"
+              style="background: #bddce7; padding: 6px;" />
+            <div class="bot-info">
+              <span class="bot-name">Panel Permintaan Admin</span>
+              <span class="bot-status" style="color: #38a0c4;">Panel Admin</span>
+            </div>
+          </div>
+          <button class="close-chatbot" onclick="window.togglePermissionOverlay()" title="Tutup">
+            <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+          </button>
+        </div>
+
+        <!-- TAB BAR -->
+        <div class="permission-tab-bar">
+          <button id="tabBtnActor" class="permission-tab active" onclick="window.switchPermissionTab('actor')">Akses
+            Izin Aktor</button>
+          <button id="tabBtnCreation" class="permission-tab" onclick="window.switchPermissionTab('creation')">Akses Izin
+            Buat</button>
+        </div>
+
+        <!-- PERMISSION REQUESTS LIST (AKTOR) -->
+        <div class="chatbot-messages" id="permissionRequestsList">
+          <!-- Requests list will be loaded here dynamically -->
+        </div>
+
+        <!-- CREATION QUOTA REQUESTS LIST (BUAT) -->
+        <div class="chatbot-messages hidden" id="creationRequestsList" style="display: none;">
+          <!-- Creation requests will be loaded here dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI MINTA AKSES -->
+    <div id="requestPermissionConfirmOverlay" class="delete-confirm-overlay hidden">
+      <div class="delete-confirm-modal">
+        <img src="/static/image/icon/access.svg" class="delete-confirm-svg" alt="Akses Izin" />
+        <h3 class="delete-confirm-title">Minta Akses Aktor?</h3>
+        <p class="delete-confirm-desc" id="requestPermissionDesc">Tuliskan alasan permintaan akses untuk aktor ini.</p>
+        <div style="width: 100%; margin: 10px 0 16px 0;">
+          <textarea id="requestPermissionReasonInput" class="edit-profile-input"
+            style="width: 100%; height: 75px; resize: none; padding: 10px; font-size: 13px; border-radius: 12px; border: 1px solid #cdd8e0; outline: none;"
+            placeholder="Tuliskan alasan Anda di sini..."></textarea>
+        </div>
+        <div class="delete-confirm-actions">
+          <button class="btn-location no" onclick="window.closeRequestPermissionModal()">Batal</button>
+          <button class="btn-location yes" id="btnSubmitRequestPermission"
+            onclick="window.submitRequestPermission()">Kirim</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL PERMOHONAN KUOTA MARKER AKTOR -->
+    <div id="requestCreationQuotaConfirmOverlay" class="delete-confirm-overlay hidden">
+      <div class="delete-confirm-modal" style="max-width: 350px;">
+        <img src="/static/image/icon/access.svg" class="delete-confirm-svg" alt="Akses Buat" />
+        <h3 class="delete-confirm-title">Permohonan Kuota Marker</h3>
+        <p class="delete-confirm-desc">Ajukan penambahan kuota marker aktor usaha kepada admin.</p>
+
+        <div
+          style="width: 100%; display: flex; flex-direction: column; gap: 8px; margin: 10px 0 16px 0; text-align: left;">
+          <label style="font-size: 11px; font-weight: 700; color: #2c5d6b;">Jumlah Marker Tambahan:</label>
+          <input type="number" id="requestQuotaAmountInput" class="edit-profile-input" min="1" max="50" value="1"
+            style="width: 100%; padding: 8px 12px; font-size: 13px; border-radius: 10px; border: 1px solid #cdd8e0; outline: none;" />
+
+          <label style="font-size: 11px; font-weight: 700; color: #2c5d6b;">Alasan Permohonan:</label>
+          <textarea id="requestQuotaReasonInput" class="edit-profile-input"
+            style="width: 100%; height: 65px; resize: none; padding: 10px; font-size: 13px; border-radius: 10px; border: 1px solid #cdd8e0; outline: none;"
+            placeholder="Tuliskan alasan penambahan kuota..."></textarea>
+        </div>
+
+        <div class="delete-confirm-actions">
+          <button class="btn-location no" onclick="window.closeRequestCreationQuotaModal()">Batal</button>
+          <button class="btn-location yes" id="btnSubmitQuotaRequest"
+            onclick="window.submitRequestCreationQuota()">Kirim Permohonan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE EDIT OVERLAY -->
+    <div id="profileEditOverlay" class="profile-edit-overlay hidden">
+      <div class="profile-edit-card">
+        <div class="close-profile-edit" onclick="document.getElementById('profileEditOverlay').classList.add('hidden')" title="Tutup">
+          <img src="/static/image/icon/close.svg" alt="Tutup" style="width: 16px; height: 16px;" />
+        </div>
+        <div class="profile-edit-title">Edit Profil Saya</div>
+
+        <div class="edit-profile-photo" onclick="document.getElementById('profileFileInput').click()">
+          <img id="profilePreviewImg" src="data:image/*;base64,{{ user.foto }}" alt="Profile" />
+          <div class="photo-overlay-edit">Ganti Foto</div>
+        </div>
+        <input type="file" id="profileFileInput" hidden accept="image/*" onchange="previewProfilePhoto(event)">
+
+        <input type="text" id="profileNameInput" class="edit-profile-input" value="{{ user.name }}"
+          placeholder="Nama Anda">
+
+        <button class="btn-profile-save" id="saveProfileBtn">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Markdown Library -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Map & Aktor -->
+  <script src="/static/js/map.js"></script>
+  <script src="/static/js/actor_popup.js?v=1.2"></script>
+  <script src="/static/js/draw_area.js?v=1.2"></script>
+  <script src="/static/js/spatial_chat.js"></script>
+  <script>
+    // Ganti Map dengan array JSON agar mudah simpan/load
+    window.actorData = []; // setiap item: { actorId, markerId, type, iconUrl, nama, sektor, valueChain, survival, images, dll }
+
+
+    const switchIcons = document.querySelectorAll(".actor-switch img");
+    const actors = document.querySelectorAll(".actor-main");
+
+    switchIcons.forEach(icon => {
+      icon.addEventListener("click", () => {
+        const targetId = icon.getAttribute("data-target");
+
+        // sembunyikan semua actor
+        actors.forEach(actor => {
+          actor.classList.add("hidden");
+        });
+
+        // tampilkan target
+        document.getElementById(targetId).classList.remove("hidden");
+
+        // reset active icon
+        switchIcons.forEach(i => i.classList.remove("active"));
+
+        // aktifkan icon yang diklik
+        icon.classList.add("active");
+      });
+    });
+  </script>
+  <script src="/static/js/user_profile.js?v=1.2"></script>
+
+</body>
+
+</html>

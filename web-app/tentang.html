@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tentang</title>
+  <meta name="description"
+    content="Profil Pengembang Bayu Dwi Prasetyo NIM 2211080, Informatika Universitas Mulia, dan Riset Web GIS AI Spasial.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="../static/image/icon.ico" />
+
+  <!-- Landing Page & About Stylesheet -->
+  <link rel="stylesheet" href="style-css/home.css">
+</head>
+
+<body>
+
+  <!-- Ambient Backdrop -->
+  <div class="bg-ambient"></div>
+
+  <!-- Site Header with Brand Logo, Navigation Links, and CTA -->
+  <header class="site-header">
+    <div class="nav-container">
+      <div class="brand-identity">
+        <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+          <img src="../static/image/logo.svg" alt="Logo 2211080" class="brand-logo">
+          <span class="brand-name">2211080</span>
+        </a>
+      </div>
+
+      <!-- Mobile Hamburger Toggle Button (☰) -->
+      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle Menu">
+        <span id="menuIcon">☰</span>
+      </button>
+
+      <nav class="site-nav" id="siteNav">
+        <a href="/" class="nav-link">Beranda</a>
+        <a href="/tentang" class="nav-link active">Tentang</a>
+        <a href="/auth" class="btn-cta-header mobile-nav-cta">MULAI SEKARANG</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/auth" class="btn-cta-header">MULAI SEKARANG</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main About Viewport -->
+  <main class="about-viewport">
+    <!-- Header Section (Tanpa Badge) -->
+    <section class="about-header">
+      <h1 class="about-title">Tentang Peneliti &amp; Sistem</h1>
+      <p class="about-subtitle">
+        Informasi profil akademik dan identitas peneliti
+      </p>
+    </section>
+
+    <!-- Profile Hero Glass Card -->
+    <section class="about-profile-hero-card">
+      <!-- Left Photo Column (3D Interactive & Ambient Rotating Card) -->
+      <div class="about-photo-col">
+        <div class="photo-3d-wrapper" id="photo3dWrapper">
+          <div class="photo-3d-card" id="photo3dCard">
+            <div class="about-photo-frame">
+              <img src="img/bayu.png" alt="Bayu Dwi Prasetyo" class="about-photo-img" draggable="false"
+                ondragstart="return false;" />
+              <div class="photo-glass-glare"></div>
+            </div>
+          </div>
+        </div>
+        <div class="about-nim-badge">
+          <span>NIM: 2211080</span>
+        </div>
+      </div>
+
+      <!-- Right Information Column -->
+      <div class="about-info-col">
+        <div class="about-author-header">
+          <span class="about-author-role">Peneliti &amp; Pengembang Perangkat Lunak</span>
+          <h2 class="about-author-name">Bayu Dwi Prasetyo</h2>
+        </div>
+
+        <!-- Academic Meta Grid (Tanpa Badge Fokus Riset) -->
+        <div class="about-meta-grid">
+          <div class="about-meta-item">
+            <span class="about-meta-label">Program Studi</span>
+            <span class="about-meta-val">Informatika (S1)</span>
+          </div>
+          <div class="about-meta-item">
+            <span class="about-meta-label">Perguruan Tinggi</span>
+            <span class="about-meta-val">Universitas Mulia</span>
+          </div>
+          <div class="about-meta-item">
+            <span class="about-meta-label">Nomor Induk Mahasiswa</span>
+            <span class="about-meta-val">2211080</span>
+          </div>
+        </div>
+
+        <!-- Thesis Box Highlight -->
+        <div class="about-thesis-card">
+          <span class="about-thesis-tag">Judul Skripsi / Tugas Akhir</span>
+          <h3 class="about-thesis-title">
+            RANCANG BANGUN APLIKASI WEB GIS BERBASIS KNOWLEDGE GRAPH DAN RETRIEVAL-AUGMENTED GENERATION (RAG) UNTUK
+            PEMETAAN DAN VISUALISASI LINGKUNGAN USAHA LOKAL (Studi Kasus: Kelurahan Lamaru, Kecamatan Balikpapan Timur)
+          </h3>
+          <p class="about-thesis-summary">
+            Penelitian ini berfokus pada pemetaan digital geografis spasial (Web GIS), pemodelan relasi
+            Knowledge Graph
+            antar entitas usaha, serta Chatbot terintegrasi Retrieval-Augmented Generation (RAG) berbasis radius
+            untuk
+            memetakan dan memvisualisasikan ekosistem usaha lokal secara terpadu.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Research Pillars & Core Modules -->
+    <section class="about-section-header">
+      <h2 class="about-section-title">Pilar &amp; Modul Utama Sistem</h2>
+      <p class="about-subtitle">Empat modul fungsional terintegrasi yang dibangun dalam sistem ini.</p>
+    </section>
+
+    <div class="about-pillars-grid">
+      <!-- Pillar 1: Web GIS -->
+      <div class="about-pillar-card">
+        <div class="about-pillar-number">01</div>
+        <h3 class="about-pillar-title">Web GIS</h3>
+        <p class="about-pillar-desc">
+          Visualisasi spasial titik sebaran unit usaha, pengukuran radius dan buffer area interaktif.
+        </p>
+      </div>
+
+      <!-- Pillar 2: Knowledge Graph -->
+      <div class="about-pillar-card">
+        <div class="about-pillar-number">02</div>
+        <h3 class="about-pillar-title">Knowledge Graph</h3>
+        <p class="about-pillar-desc">
+          Pemodelan relasi keterhubungan ekonomi antar aktor usaha lokal dalam struktur
+          graph database.
+        </p>
+      </div>
+
+      <!-- Pillar 3: Chatbot RAG Spasial -->
+      <div class="about-pillar-card">
+        <div class="about-pillar-number">03</div>
+        <h3 class="about-pillar-title">Chatbot Spasial</h3>
+        <p class="about-pillar-desc">
+          Chatbot AI berbasis Retrieval-Augmented Generation yang menganalisis konteks radius wilayah secara dinamis
+          untuk menjawab pertanyaan dan merekomendasikan wirausaha.
+        </p>
+      </div>
+
+      <!-- Pillar 4: Drag and Drop Builder -->
+      <div class="about-pillar-card">
+        <div class="about-pillar-number">04</div>
+        <h3 class="about-pillar-title">Drag and Drop Builder</h3>
+        <p class="about-pillar-desc">
+          Modul pembuatan halaman promosi digital mandiri dengan sistem drag-and-drop yang terintegrasi
+          langsung dengan titik lokasi peta digital.
+        </p>
+      </div>
+    </div>
+
+    <!-- Return to Simulator CTA -->
+    <section class="about-cta-card">
+      <h2 class="about-cta-title">Simulator Modul Sistem Terpadu</h2>
+      <p class="about-cta-desc">
+        Uji coba dan eksplorasi langsung simulasi tiap modul di halaman utama.
+      </p>
+      <a href="/" class="btn-about-back">
+        <span>Kembali ke Halaman Utama</span>
+      </a>
+    </section>
+  </main>
+
+  <!-- Clean Footer (Identical to home.html) -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>© 2026 Sistem milik 2211080. All Rights Reserved.</span>
+      <span>Sistem milik 2211080</span>
+    </div>
+  </footer>
+
+  <!-- Mobile Hamburger Menu & 3D Interactive Photo Rotation Scripts -->
+  <script>
+    // Mobile Hamburger Toggle
+    (function initMobileMenu() {
+      const toggleBtn = document.getElementById('mobileMenuToggle');
+      const siteNav = document.getElementById('siteNav');
+      const menuIcon = document.getElementById('menuIcon');
+      if (!toggleBtn || !siteNav) return;
+
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = siteNav.classList.toggle('open');
+        toggleBtn.classList.toggle('active', isOpen);
+        if (menuIcon) menuIcon.textContent = isOpen ? '✕' : '☰';
+      });
+
+      siteNav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          siteNav.classList.remove('open');
+          toggleBtn.classList.remove('active');
+          if (menuIcon) menuIcon.textContent = '☰';
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!siteNav.contains(e.target) && !toggleBtn.contains(e.target)) {
+          siteNav.classList.remove('open');
+          toggleBtn.classList.remove('active');
+          if (menuIcon) menuIcon.textContent = '☰';
+        }
+      });
+    })();
+
+    // 3D Photo Card: Interactive Drag Rotation + Ambient Floating Rotation Loop
+    (function initPhoto3DRotation() {
+      const wrapper = document.getElementById('photo3dWrapper');
+      const card = document.getElementById('photo3dCard');
+      if (!wrapper || !card) return;
+
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let currentRotX = 0;
+      let currentRotY = 0;
+      let targetRotX = 0;
+      let targetRotY = 0;
+      let animFrameId = null;
+      let idleTimeout = null;
+
+      function onPointerDown(e) {
+        isDragging = true;
+        card.classList.add('is-interacting');
+        wrapper.classList.add('grabbing');
+        clearTimeout(idleTimeout);
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        startX = clientX;
+        startY = clientY;
+
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        updatePhysics();
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        targetRotY += deltaX * 0.45;
+        targetRotX -= deltaY * 0.45;
+
+        targetRotX = Math.max(-25, Math.min(25, targetRotX));
+        targetRotY = Math.max(-35, Math.min(35, targetRotY));
+
+        startX = clientX;
+        startY = clientY;
+      }
+
+      function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        wrapper.classList.remove('grabbing');
+        card.classList.add('animating');
+
+        targetRotX = 0;
+        targetRotY = 0;
+
+        idleTimeout = setTimeout(() => {
+          card.classList.remove('animating');
+          card.classList.remove('is-interacting');
+          card.style.transform = '';
+        }, 1200);
+      }
+
+      function updatePhysics() {
+        if (isDragging || card.classList.contains('animating')) {
+          currentRotX += (targetRotX - currentRotX) * 0.16;
+          currentRotY += (targetRotY - currentRotY) * 0.16;
+
+          card.style.transform = `rotateX(${currentRotX.toFixed(2)}deg) rotateY(${currentRotY.toFixed(2)}deg)`;
+
+          if (isDragging || Math.abs(targetRotX - currentRotX) > 0.05 || Math.abs(targetRotY - currentRotY) > 0.05) {
+            animFrameId = requestAnimationFrame(updatePhysics);
+          }
+        }
+      }
+
+      wrapper.addEventListener('dragstart', (e) => e.preventDefault());
+      wrapper.addEventListener('mousedown', onPointerDown);
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+
+      wrapper.addEventListener('touchstart', onPointerDown, { passive: true });
+      window.addEventListener('touchmove', onPointerMove, { passive: true });
+      window.addEventListener('touchend', onPointerUp);
+    })();
+  </script>
+</body>
+
+</html>
