@@ -396,27 +396,11 @@ def save_actor():
     lat        = data.get("lat")
     lng        = data.get("lng")
 
-    # 1. Konversi dan simpan Base64 Gambar ke Static Files permanen
-    if "Foto Visual Path" in data:
-        saved_foto = save_base64_image(data["Foto Visual Path"], prefix="actor_visual")
-        data["Foto Visual Path"] = saved_foto
-        data["foto"] = saved_foto
-    elif "foto" in data:
-        saved_foto = save_base64_image(data["foto"], prefix="actor_visual")
-        data["Foto Visual Path"] = saved_foto
-        data["foto"] = saved_foto
-
-    if "NotesImage" in data:
-        data["NotesImage"] = save_base64_image(data["NotesImage"], prefix="note_img")
-
-    for list_key in ["lokasiNotesList", "NotesList", "usahaActivityList"]:
-        if list_key in data and isinstance(data[list_key], list):
-            for item in data[list_key]:
-                if isinstance(item, dict):
-                    if "image" in item:
-                        item["image"] = save_base64_image(item["image"], prefix="note_img")
-                    if "NotesImage" in item:
-                        item["NotesImage"] = save_base64_image(item["NotesImage"], prefix="note_img")
+    # Pastikan data foto dan gambar tersimpan konsisten di payload Neo4j
+    if "Foto Visual Path" in data and data["Foto Visual Path"]:
+        data["foto"] = data["Foto Visual Path"]
+    elif "foto" in data and data["foto"]:
+        data["Foto Visual Path"] = data["foto"]
 
     # Perbaiki lat/lng dari rawCoords jika bernilai 0 atau tidak valid (untuk poligon)
     if (not lat or not lng or lat == 0.0 or lng == 0.0) and "rawCoords" in data:
@@ -425,7 +409,7 @@ def save_actor():
             lat = sum(float(c.get("lat", 0)) for c in coords) / len(coords)
             lng = sum(float(c.get("lng", 0)) for c in coords) / len(coords)
 
-    # Filter field yang tidak relevan untuk teks & embedding
+    # Filter field yang tidak relevan untuk teks & embedding (agar embedding OpenAI tidak crash)
     exclude_keys = {
         "lat", "lng", "foto", "Foto Visual Path", "color", "warna", "Warna",
         "Titik Koordinat (Lat, Lon)", "icon", "id", "type", "timestamp", "Marker Type",
@@ -670,49 +654,23 @@ def save_promotion_page(actor_id):
     data = request.get_json() or {}
     promotion_page_data = data.get("promotion_page_data", "[]")
 
-    # 1. Konversi dan simpan Base64 Gambar di dalam elemen & background ke Static Files permanen
+    # Ekstrak data teks paragraf dan judul secara bersih untuk embedding & LLM
     clean_texts = []
     try:
         lp_json = json.loads(promotion_page_data)
         if isinstance(lp_json, dict):
-            # Process background image
-            if "background" in lp_json and isinstance(lp_json["background"], dict):
-                bg = lp_json["background"]
-                if bg.get("imageSrc"):
-                    bg["imageSrc"] = save_base64_image(bg["imageSrc"], prefix="bg_promo")
-
-            # Process elements
             lp_elements = lp_json.get("elements", [])
             for el in lp_elements:
-                if isinstance(el, dict):
-                    if el.get("type") in ["title", "text"]:
-                        val = str(el.get("content", "")).strip()
-                        if val:
-                            clean_texts.append(val)
-                    if el.get("imageSrc"):
-                        el["imageSrc"] = save_base64_image(el["imageSrc"], prefix="promo_el")
-                    if el.get("mediaCover"):
-                        el["mediaCover"] = save_base64_image(el["mediaCover"], prefix="promo_cover")
-                    if "chatbotConfig" in el and isinstance(el["chatbotConfig"], dict):
-                        cc = el["chatbotConfig"]
-                        if cc.get("avatarUrl"):
-                            cc["avatarUrl"] = save_base64_image(cc["avatarUrl"], prefix="cb_avatar")
-                        if cc.get("userAvatarUrl"):
-                            cc["userAvatarUrl"] = save_base64_image(cc["userAvatarUrl"], prefix="cb_user")
-                        if cc.get("bgImageUrl"):
-                            cc["bgImageUrl"] = save_base64_image(cc["bgImageUrl"], prefix="cb_bg")
-            
-            promotion_page_data = json.dumps(lp_json, ensure_ascii=False)
+                if isinstance(el, dict) and el.get("type") in ["title", "text"]:
+                    val = str(el.get("content", "")).strip()
+                    if val:
+                        clean_texts.append(val)
         elif isinstance(lp_json, list):
             for el in lp_json:
-                if isinstance(el, dict):
-                    if el.get("type") in ["title", "text"]:
-                        val = str(el.get("content", "")).strip()
-                        if val:
-                            clean_texts.append(val)
-                    if el.get("imageSrc"):
-                        el["imageSrc"] = save_base64_image(el["imageSrc"], prefix="promo_el")
-            promotion_page_data = json.dumps(lp_json, ensure_ascii=False)
+                if isinstance(el, dict) and el.get("type") in ["title", "text"]:
+                    val = str(el.get("content", "")).strip()
+                    if val:
+                        clean_texts.append(val)
     except Exception as e:
         print(f"[routes_actors] Error parsing promotion_page_data elements: {e}")
     
