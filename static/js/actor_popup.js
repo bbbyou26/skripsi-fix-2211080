@@ -1510,9 +1510,15 @@ window.openEditOverlay = function (type, uniqueId = '') {
 
         // Populate preview image if exists
         const preview = card.querySelector(".preview img");
-        if (preview && data["Foto Visual Path"]) {
-          preview.src = data["Foto Visual Path"];
-          preview.parentElement.style.display = "block";
+        const existingPhoto = data["Foto Visual Path"] || data["foto"] || data["Foto"] || "";
+        if (preview) {
+          if (existingPhoto) {
+            preview.src = existingPhoto;
+            preview.parentElement.style.display = "block";
+          } else {
+            preview.src = "";
+            preview.parentElement.style.display = "none";
+          }
         }
 
         // Special Notes field hydration for Aktor Usaha
@@ -1599,21 +1605,26 @@ window.openEditOverlay = function (type, uniqueId = '') {
           if (editTitle) editTitle.innerText = "Edit Catatan Lokasi";
 
           // Hydrate User Notes fields
+          const data = window.editingMarker.actorData || {};
+          const userNoteName = data["NotesName"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.name) || '';
+          const userNoteText = data["Notes"] || data["Catatan"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.text) || '';
+          const userNoteImg = data["NotesImage"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.image) || '';
+
           const notesNameUser = document.getElementById("inputLokasiNotesNameUser");
-          if (notesNameUser && window.editingMarker.actorData) {
-            notesNameUser.value = window.editingMarker.actorData["NotesName"] || '';
+          if (notesNameUser) {
+            notesNameUser.value = userNoteName;
           }
 
           const notesTextUser = document.getElementById("inputLokasiNotesTextUser");
-          if (notesTextUser && window.editingMarker.actorData) {
-            notesTextUser.value = window.editingMarker.actorData["Notes"] || window.editingMarker.actorData["Catatan"] || '';
+          if (notesTextUser) {
+            notesTextUser.value = userNoteText;
           }
 
           const previewUserDiv = document.getElementById("previewLokasiNotesUser");
           const previewUserImg = previewUserDiv?.querySelector("img");
           if (previewUserDiv && previewUserImg) {
-            if (window.editingMarker.actorData && window.editingMarker.actorData["NotesImage"]) {
-              previewUserImg.src = window.editingMarker.actorData["NotesImage"];
+            if (userNoteImg) {
+              previewUserImg.src = userNoteImg;
               previewUserDiv.style.display = "block";
             } else {
               previewUserImg.src = "";
@@ -1848,7 +1859,24 @@ window.saveToNeo4j = function (marker) {
     body: JSON.stringify(payload)
   })
     .then(res => res.json())
-    .then(data => console.log("Real-time Neo4j sync successful"))
+    .then(data => {
+      if (data && data.success) {
+        console.log("Real-time Neo4j sync successful");
+        if (data.foto_visual && marker.actorData) {
+          marker.actorData["Foto Visual Path"] = data.foto_visual;
+          marker.actorData["foto"] = data.foto_visual;
+        }
+        if (data.notes_image && marker.actorData) {
+          marker.actorData["NotesImage"] = data.notes_image;
+        }
+        if (data.lokasiNotesList && marker.actorData) {
+          marker.actorData["lokasiNotesList"] = data.lokasiNotesList;
+          marker.actorData["NotesList"] = data.lokasiNotesList;
+        }
+      } else {
+        console.warn("Real-time Neo4j sync response:", data);
+      }
+    })
     .catch(err => console.error("Real-time Neo4j sync failed:", err));
 };
 
@@ -1908,10 +1936,11 @@ document.addEventListener('click', (e) => {
     });
 
     // Handle Primary Photo Visual khusus (Target specific primary preview IDs so notes photo does not pollute Foto Visual Path)
-    const primaryPreviewDiv = card.querySelector('#previewUsaha, #previewLokasi');
+    const primaryPreviewDiv = card.querySelector('#previewUsaha, #previewLokasi, .preview');
     const previewImg = primaryPreviewDiv?.querySelector('img');
-    if (previewImg && previewImg.src && previewImg.src.startsWith('data:image')) {
+    if (previewImg && previewImg.src && previewImg.src !== window.location.href && !previewImg.src.endsWith('/map') && !previewImg.src.endsWith('/map.html')) {
       actorData["Foto Visual Path"] = previewImg.src;
+      actorData["foto"] = previewImg.src;
     }
 
     // Handle Notes khusus Aktor Usaha
@@ -1930,7 +1959,7 @@ document.addEventListener('click', (e) => {
       const previewNotesDiv = document.getElementById("previewUsahaNotesImg");
       const previewNotesImg = previewNotesDiv?.querySelector("img");
       let notesImg = "";
-      if (previewNotesImg && previewNotesImg.src && previewNotesImg.src !== window.location.href) {
+      if (previewNotesImg && previewNotesImg.src && previewNotesImg.src !== window.location.href && !previewNotesImg.src.endsWith('/map') && !previewNotesImg.src.endsWith('/map.html')) {
         notesImg = previewNotesImg.src;
       }
 
@@ -1983,7 +2012,7 @@ document.addEventListener('click', (e) => {
         const previewUserDiv = document.getElementById("previewLokasiNotesUser");
         const previewUserImg = previewUserDiv?.querySelector("img");
         let notesImgUser = "";
-        if (previewUserImg && previewUserImg.src && previewUserImg.src !== window.location.href) {
+        if (previewUserImg && previewUserImg.src && previewUserImg.src !== window.location.href && !previewUserImg.src.endsWith('/map') && !previewUserImg.src.endsWith('/map.html')) {
           notesImgUser = previewUserImg.src;
         }
 
@@ -1993,6 +2022,23 @@ document.addEventListener('click', (e) => {
           actorData["Catatan"] = notesTextUser;
           if (notesImgUser) actorData["NotesImage"] = notesImgUser;
           else delete actorData["NotesImage"];
+
+          let list = window.getLokasiNotesList(actorData);
+          if (list.length === 0) {
+            list.push({
+              id: "note_" + Date.now(),
+              name: notesNameUser || "Catatan Lokasi",
+              text: notesTextUser,
+              image: notesImgUser,
+              date: new Date().toLocaleString()
+            });
+          } else {
+            list[0].name = notesNameUser || "Catatan Lokasi";
+            list[0].text = notesTextUser;
+            list[0].image = notesImgUser;
+          }
+          actorData["lokasiNotesList"] = list;
+          actorData["NotesList"] = list;
         }
       }
 
@@ -2035,12 +2081,14 @@ document.addEventListener('click', (e) => {
 });
 
 window.previewImageEdit = function (event, previewId) {
+  if (!event || !event.target || !event.target.files || !event.target.files[0]) return;
   const reader = new FileReader();
   const previewDiv = document.getElementById(previewId);
+  if (!previewDiv) return;
   const img = previewDiv.querySelector('img');
 
   reader.onload = function (e) {
-    img.src = e.target.result;
+    if (img) img.src = e.target.result;
     previewDiv.style.display = "block";
   };
   reader.readAsDataURL(event.target.files[0]);

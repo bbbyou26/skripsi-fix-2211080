@@ -537,6 +537,14 @@ function savePromotionPage() {
     .then((res) => res.json())
     .then((data) => {
       if (data.success) {
+        if (data.promotion_page_data) {
+          try {
+            window.promotion_page_data = data.promotion_page_data;
+            const updated = JSON.parse(data.promotion_page_data);
+            if (updated.elements) elements = updated.elements;
+            if (updated.background && updated.background.imageSrc) window.bgImageSrc = updated.background.imageSrc;
+          } catch (pe) {}
+        }
         if (typeof showToast === "function") {
           showToast("Data promotion page berhasil disimpan!", "success");
         } else if (typeof showToastNotification === "function") {

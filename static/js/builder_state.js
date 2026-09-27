@@ -127,7 +127,7 @@ if (elements && elements.length > 0) {
   }
   if (window.actorFoto && window.actorFoto.trim() !== "" && window.actorFoto !== "{{ foto_visual }}") {
     const imgEl = elements.find(el => el.type === "image");
-    if (imgEl && (!imgEl.imageSrc || (!imgEl.imageSrc.startsWith("data:") && !imgEl.imageSrc.includes("no-image.svg") && !imgEl.imageSrc.includes("img-temp.svg")))) {
+    if (imgEl && (!imgEl.imageSrc || imgEl.imageSrc.includes("no-image.svg") || imgEl.imageSrc.includes("img-temp.svg"))) {
       imgEl.imageSrc = window.actorFoto;
     }
   }
