@@ -9,6 +9,9 @@ Menangani:
 """
 import json
 import uuid
+import os
+import base64
+from werkzeug.utils import secure_filename
 
 from flask import request, jsonify, render_template, session, redirect, url_for
 
@@ -16,12 +19,64 @@ from config import app, driver, client_embed, EMBED_MODEL
 
 
 # ---------------------------------------------------------------
+# HELPER: Simpan Base64 Image ke Disk & Dapatkan Static URL
+# ---------------------------------------------------------------
+def save_base64_image(b64_str, prefix="img"):
+    """
+    Jika b64_str adalah base64 data URI (data:image/...), simpan ke static/uploads
+    dan kembalikan URL statis '/static/uploads/filename.ext'.
+    Jika sudah berupa URL atau path biasa, kembalikan apa adanya.
+    """
+    if not b64_str or not isinstance(b64_str, str):
+        return b64_str
+
+    b64_str = b64_str.strip()
+    if not b64_str.startswith("data:image/") and not b64_str.startswith("data:application/"):
+        return b64_str
+
+    try:
+        header, encoded = b64_str.split(",", 1)
+        ext = "png"
+        if "image/jpeg" in header or "image/jpg" in header:
+            ext = "jpg"
+        elif "image/png" in header:
+            ext = "png"
+        elif "image/webp" in header:
+            ext = "webp"
+        elif "image/svg+xml" in header:
+            ext = "svg"
+        elif "image/gif" in header:
+            ext = "gif"
+
+        data_bytes = base64.b64decode(encoded)
+        filename = f"{prefix}_{uuid.uuid4().hex[:12]}.{ext}"
+        upload_dir = app.config.get('UPLOAD_FOLDER', 'static/uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        filepath = os.path.join(upload_dir, filename)
+
+        with open(filepath, "wb") as f:
+            f.write(data_bytes)
+
+        return f"/static/uploads/{filename}"
+    except Exception as e:
+        print(f"[routes_actors] Gagal menyimpan base64 image: {e}")
+        return b64_str
+
+
+# ---------------------------------------------------------------
 # HELPER: Buat Embedding Teks (Semantic Search)
 # ---------------------------------------------------------------
 def get_embedding(text: str) -> list:
-    """Buat vector embedding dari teks menggunakan OpenAI Embeddings API."""
-    response = client_embed.embeddings.create(model=EMBED_MODEL, input=text)
-    return response.data[0].embedding
+    """Buat vector embedding dari teks menggunakan OpenAI Embeddings API secara aman dari limit token."""
+    try:
+        clean_text = str(text)[:20000].strip()
+        if not clean_text:
+            return None
+        response = client_embed.embeddings.create(model=EMBED_MODEL, input=clean_text)
+        return response.data[0].embedding
+    except Exception as e:
+        print(f"[routes_actors] Embedding failed: {e}")
+        return None
 
 
 def extract_entities_via_llm(name, fokus_usaha, marker_type, promotion_page_text, neo_session):
@@ -300,7 +355,7 @@ def update_actor_relations(session, actor_id):
 # ---------------------------------------------------------------
 @app.route("/api/actor/save", methods=["POST"])
 def save_actor():
-    data       = request.get_json()
+    data       = request.get_json() or {}
     actor_id   = data.get("id", str(uuid.uuid4()))
 
     # Check permission
@@ -340,6 +395,28 @@ def save_actor():
     lat        = data.get("lat")
     lng        = data.get("lng")
 
+    # 1. Konversi dan simpan Base64 Gambar ke Static Files permanen
+    if "Foto Visual Path" in data:
+        saved_foto = save_base64_image(data["Foto Visual Path"], prefix="actor_visual")
+        data["Foto Visual Path"] = saved_foto
+        data["foto"] = saved_foto
+    elif "foto" in data:
+        saved_foto = save_base64_image(data["foto"], prefix="actor_visual")
+        data["Foto Visual Path"] = saved_foto
+        data["foto"] = saved_foto
+
+    if "NotesImage" in data:
+        data["NotesImage"] = save_base64_image(data["NotesImage"], prefix="note_img")
+
+    for list_key in ["lokasiNotesList", "NotesList", "usahaActivityList"]:
+        if list_key in data and isinstance(data[list_key], list):
+            for item in data[list_key]:
+                if isinstance(item, dict):
+                    if "image" in item:
+                        item["image"] = save_base64_image(item["image"], prefix="note_img")
+                    if "NotesImage" in item:
+                        item["NotesImage"] = save_base64_image(item["NotesImage"], prefix="note_img")
+
     # Perbaiki lat/lng dari rawCoords jika bernilai 0 atau tidak valid (untuk poligon)
     if (not lat or not lng or lat == 0.0 or lng == 0.0) and "rawCoords" in data:
         coords = data["rawCoords"]
@@ -347,11 +424,12 @@ def save_actor():
             lat = sum(float(c.get("lat", 0)) for c in coords) / len(coords)
             lng = sum(float(c.get("lng", 0)) for c in coords) / len(coords)
 
-    # Filter field yang tidak relevan untuk teks
+    # Filter field yang tidak relevan untuk teks & embedding
     exclude_keys = {
         "lat", "lng", "foto", "Foto Visual Path", "color", "warna", "Warna",
         "Titik Koordinat (Lat, Lon)", "icon", "id", "type", "timestamp", "Marker Type",
-        "promotion_page_data"  # Exclude raw layout JSON from embedding calculation
+        "promotion_page_data", "NotesImage", "image", "rawCoords", "lokasiNotesList",
+        "NotesList", "usahaActivityList"
     }
     
     # Extract promotion page text if present
@@ -376,6 +454,18 @@ def save_actor():
                     if k not in exclude_keys and not isinstance(v, list)}
     text_content.update({k: v for k, v in data.items()
                           if k not in exclude_keys and isinstance(v, list)})
+
+    # Masukkan teks dari catatan / aktivitas tanpa string gambar
+    notes_texts = []
+    for list_key in ["lokasiNotesList", "NotesList", "usahaActivityList"]:
+        if list_key in data and isinstance(data[list_key], list):
+            for item in data[list_key]:
+                if isinstance(item, dict):
+                    t = f"{item.get('name', '')} {item.get('text', '')}".strip()
+                    if t:
+                        notes_texts.append(t)
+    if notes_texts:
+        text_content["Daftar_Catatan_Teks"] = "\n".join(notes_texts)
 
     str_representation  = json.dumps(text_content, ensure_ascii=False)
     full_data_repr      = json.dumps(data, ensure_ascii=False)
@@ -416,7 +506,13 @@ def save_actor():
         # 2. Update all relationships
         update_actor_relations(neo_session, actor_id)
 
-    return jsonify({"success": True, "id": actor_id})
+    return jsonify({
+        "success": True,
+        "id": actor_id,
+        "foto_visual": data.get("Foto Visual Path", ""),
+        "notes_image": data.get("NotesImage", ""),
+        "lokasiNotesList": data.get("lokasiNotesList", [])
+    })
 
 
 # ---------------------------------------------------------------
@@ -563,19 +659,52 @@ def save_promotion_page(actor_id):
         if not perm and not is_user_created:
             return jsonify({"success": False, "error": "Unauthorized"}), 403
 
-    data = request.get_json()
+    data = request.get_json() or {}
     promotion_page_data = data.get("promotion_page_data", "[]")
 
-    # Ekstrak data teks paragraf dan judul secara bersih
+    # 1. Konversi dan simpan Base64 Gambar di dalam elemen & background ke Static Files permanen
     clean_texts = []
     try:
         lp_json = json.loads(promotion_page_data)
-        lp_elements = lp_json.get("elements", [])
-        for el in lp_elements:
-            if el.get("type") in ["title", "text"]:
-                val = str(el.get("content", "")).strip()
-                if val:
-                    clean_texts.append(val)
+        if isinstance(lp_json, dict):
+            # Process background image
+            if "background" in lp_json and isinstance(lp_json["background"], dict):
+                bg = lp_json["background"]
+                if bg.get("imageSrc"):
+                    bg["imageSrc"] = save_base64_image(bg["imageSrc"], prefix="bg_promo")
+
+            # Process elements
+            lp_elements = lp_json.get("elements", [])
+            for el in lp_elements:
+                if isinstance(el, dict):
+                    if el.get("type") in ["title", "text"]:
+                        val = str(el.get("content", "")).strip()
+                        if val:
+                            clean_texts.append(val)
+                    if el.get("imageSrc"):
+                        el["imageSrc"] = save_base64_image(el["imageSrc"], prefix="promo_el")
+                    if el.get("mediaCover"):
+                        el["mediaCover"] = save_base64_image(el["mediaCover"], prefix="promo_cover")
+                    if "chatbotConfig" in el and isinstance(el["chatbotConfig"], dict):
+                        cc = el["chatbotConfig"]
+                        if cc.get("avatarUrl"):
+                            cc["avatarUrl"] = save_base64_image(cc["avatarUrl"], prefix="cb_avatar")
+                        if cc.get("userAvatarUrl"):
+                            cc["userAvatarUrl"] = save_base64_image(cc["userAvatarUrl"], prefix="cb_user")
+                        if cc.get("bgImageUrl"):
+                            cc["bgImageUrl"] = save_base64_image(cc["bgImageUrl"], prefix="cb_bg")
+            
+            promotion_page_data = json.dumps(lp_json, ensure_ascii=False)
+        elif isinstance(lp_json, list):
+            for el in lp_json:
+                if isinstance(el, dict):
+                    if el.get("type") in ["title", "text"]:
+                        val = str(el.get("content", "")).strip()
+                        if val:
+                            clean_texts.append(val)
+                    if el.get("imageSrc"):
+                        el["imageSrc"] = save_base64_image(el["imageSrc"], prefix="promo_el")
+            promotion_page_data = json.dumps(lp_json, ensure_ascii=False)
     except Exception as e:
         print(f"[routes_actors] Error parsing promotion_page_data elements: {e}")
     
@@ -603,7 +732,8 @@ def save_promotion_page(actor_id):
         exclude_keys = {
             "lat", "lng", "foto", "Foto Visual Path", "color", "warna", "Warna",
             "Titik Koordinat (Lat, Lon)", "icon", "id", "type", "timestamp", "Marker Type",
-            "promotion_page_data"  # Exclude raw layout JSON from embedding calculation
+            "promotion_page_data", "NotesImage", "image", "rawCoords", "lokasiNotesList",
+            "NotesList", "usahaActivityList"
         }
         text_content = {k: v for k, v in raw_data.items()
                         if k not in exclude_keys and not isinstance(v, list)}
@@ -636,7 +766,35 @@ def save_promotion_page(actor_id):
         # Update relationships because promotion_page_text and raw_data changed
         update_actor_relations(neo_session, actor_id)
 
-    return jsonify({"success": True})
+    return jsonify({"success": True, "promotion_page_data": promotion_page_data})
+
+
+# ---------------------------------------------------------------
+# UPLOAD GAMBAR GENERIC API
+# ---------------------------------------------------------------
+@app.route("/api/upload_image", methods=["POST"])
+def upload_image_api():
+    """Endpoint untuk upload file gambar langsung dari multipart form-data atau base64 JSON."""
+    if 'file' in request.files:
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"success": False, "error": "No file selected"}), 400
+        
+        ext = os.path.splitext(file.filename)[1].lower().replace('.', '') or 'png'
+        filename = f"upload_{uuid.uuid4().hex[:12]}.{ext}"
+        upload_dir = app.config.get('UPLOAD_FOLDER', 'static/uploads')
+        os.makedirs(upload_dir, exist_ok=True)
+        filepath = os.path.join(upload_dir, filename)
+        file.save(filepath)
+        return jsonify({"success": True, "url": f"/static/uploads/{filename}"})
+    
+    data = request.get_json() or {}
+    b64_str = data.get("image") or data.get("base64")
+    if b64_str:
+        saved_url = save_base64_image(b64_str, prefix="upload")
+        return jsonify({"success": True, "url": saved_url})
+    
+    return jsonify({"success": False, "error": "No image data provided"}), 400
 
 
 # ---------------------------------------------------------------
