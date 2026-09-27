@@ -1,5 +1,17 @@
 window.userPermissions = [];
 
+// Helper untuk konversi URL absolut browser ke relative path
+function toRelPath(u) {
+  if (!u || typeof u !== 'string') return u || '';
+  if (u.startsWith('data:')) return u; // Pertahankan base64
+  try {
+    const parsed = new URL(u, window.location.origin);
+    return parsed.pathname + parsed.search;
+  } catch (e) {
+    return u;
+  }
+}
+
 // Global references for location confirmation
 let draggingMarker = null;
 let lastMarkerPos = null;
@@ -277,7 +289,7 @@ window.onSaveUsahaActivityModal = function () {
   const previewNotesImg = previewNotesDiv?.querySelector("img");
   let notesImg = "";
   if (previewNotesImg && previewNotesImg.src && previewNotesImg.src !== window.location.href) {
-    notesImg = previewNotesImg.src;
+    notesImg = toRelPath(previewNotesImg.src);
   }
 
   actorData["NotesName"] = notesName;
@@ -608,7 +620,7 @@ window.onSaveLokasiActivityModal = function () {
   const previewNotesImg = previewNotesDiv?.querySelector("img");
   let notesImg = "";
   if (previewNotesImg && previewNotesImg.src && previewNotesImg.src !== window.location.href) {
-    notesImg = previewNotesImg.src;
+    notesImg = toRelPath(previewNotesImg.src);
   }
 
   let list = window.getLokasiNotesList(actorData);
@@ -1939,8 +1951,9 @@ document.addEventListener('click', (e) => {
     const primaryPreviewDiv = card.querySelector('#previewUsaha, #previewLokasi, .preview');
     const previewImg = primaryPreviewDiv?.querySelector('img');
     if (previewImg && previewImg.src && previewImg.src !== window.location.href && !previewImg.src.endsWith('/map') && !previewImg.src.endsWith('/map.html')) {
-      actorData["Foto Visual Path"] = previewImg.src;
-      actorData["foto"] = previewImg.src;
+      const cleanSrc = toRelPath(previewImg.src);
+      actorData["Foto Visual Path"] = cleanSrc;
+      actorData["foto"] = cleanSrc;
     }
 
     // Handle Notes khusus Aktor Usaha
@@ -1960,7 +1973,7 @@ document.addEventListener('click', (e) => {
       const previewNotesImg = previewNotesDiv?.querySelector("img");
       let notesImg = "";
       if (previewNotesImg && previewNotesImg.src && previewNotesImg.src !== window.location.href && !previewNotesImg.src.endsWith('/map') && !previewNotesImg.src.endsWith('/map.html')) {
-        notesImg = previewNotesImg.src;
+        notesImg = toRelPath(previewNotesImg.src);
       }
 
       actorData["NotesName"] = notesName;
@@ -2013,7 +2026,7 @@ document.addEventListener('click', (e) => {
         const previewUserImg = previewUserDiv?.querySelector("img");
         let notesImgUser = "";
         if (previewUserImg && previewUserImg.src && previewUserImg.src !== window.location.href && !previewUserImg.src.endsWith('/map') && !previewUserImg.src.endsWith('/map.html')) {
-          notesImgUser = previewUserImg.src;
+          notesImgUser = toRelPath(previewUserImg.src);
         }
 
         if (notesNameUser || notesTextUser || notesImgUser) {
