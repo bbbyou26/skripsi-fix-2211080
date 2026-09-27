@@ -86,7 +86,14 @@ NEO4J_URI      = os.getenv("NEO4J_URI", "neo4j+s://ee656ba0.databases.neo4j.io")
 NEO4J_USER     = os.getenv("NEO4J_USER", "ee656ba0")
 NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "")
 
-driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+driver = GraphDatabase.driver(
+    NEO4J_URI,
+    auth=(NEO4J_USER, NEO4J_PASSWORD),
+    max_connection_lifetime=180,
+    keep_alive=True,
+    liveness_check_timeout=1.0,
+    max_connection_pool_size=50
+)
 
 # ===============================
 # CORE LIBRARIES (REQUIRED)

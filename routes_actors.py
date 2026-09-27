@@ -375,16 +375,17 @@ def save_actor():
                 except Exception:
                     pass
 
-    if not is_admin:
+    actor_type = data.get("type", "unknown")
+    if not is_admin and actor_type != "aktorLokasi":
         from config import db
         perm = db['permission_requests'].find_one({"nama_akun": user, "actor_id": actor_id, "status": "approved"})
-        if actor_exists:
-            is_owner = (existing_created_by == user) if existing_created_by else False
+        if actor_exists and existing_created_by:
+            is_owner = (existing_created_by == user)
             if not is_owner and not perm:
                 return jsonify({"success": False, "error": "Unauthorized"}), 403
 
     if not existing_created_by:
-        data["createdBy"] = data.get("createdBy") or user
+        data["createdBy"] = data.get("createdBy") or user or "user"
         data["isUserCreated"] = True
     else:
         data["createdBy"] = existing_created_by
@@ -526,26 +527,30 @@ def get_actors():
            a.lat AS lat, a.lng AS lng, a.raw_data AS raw_data
     """
     actors = []
-    try:
-        with driver.session() as neo_session:
-            for record in neo_session.run(query):
-                raw = {}
-                if record["raw_data"]:
-                    try:
-                        raw = json.loads(record["raw_data"])
-                    except Exception:
-                        pass
-                actors.append({
-                    "id":       record["id"],
-                    "type":     record["type"],
-                    "name":     record["name"],
-                    "lat":      record["lat"],
-                    "lng":      record["lng"],
-                    "raw_data": raw,
-                })
-        return jsonify({"actors": actors})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    for attempt in range(2):
+        try:
+            with driver.session() as neo_session:
+                for record in neo_session.run(query):
+                    raw = {}
+                    if record["raw_data"]:
+                        try:
+                            raw = json.loads(record["raw_data"])
+                        except Exception:
+                            pass
+                    actors.append({
+                        "id":       record["id"],
+                        "type":     record["type"],
+                        "name":     record["name"],
+                        "lat":      record["lat"],
+                        "lng":      record["lng"],
+                        "raw_data": raw,
+                    })
+            return jsonify({"actors": actors})
+        except Exception as e:
+            print(f"[routes_actors] get_actors attempt {attempt+1} failed: {e}")
+            if attempt == 1:
+                return jsonify({"actors": [], "error": str(e)}), 500
+    return jsonify({"actors": actors})
 
 
 # ---------------------------------------------------------------
@@ -644,19 +649,22 @@ def save_promotion_page(actor_id):
     user = session.get("user", "")
     is_admin = user.endswith(':admin') or user.endswith(':admin@2211080.com')
     if not is_admin:
-        is_user_created = False
+        has_existing_creator = False
         with driver.session() as neo_session:
             res = neo_session.run("MATCH (a:Actor {id: $act_id}) RETURN a.raw_data AS raw_data", act_id=actor_id).single()
             if res and res["raw_data"]:
                 try:
                     rd = json.loads(res["raw_data"])
-                    if rd.get("createdBy") == user:
-                        is_user_created = True
+                    creator = rd.get("createdBy")
+                    if creator:
+                        has_existing_creator = True
+                        if creator == user:
+                            is_user_created = True
                 except Exception:
                     pass
         from config import db
         perm = db['permission_requests'].find_one({"nama_akun": user, "actor_id": actor_id, "status": "approved"})
-        if not perm and not is_user_created:
+        if has_existing_creator and not perm and not is_user_created:
             return jsonify({"success": False, "error": "Unauthorized"}), 403
 
     data = request.get_json() or {}
