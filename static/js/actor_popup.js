@@ -825,17 +825,17 @@ actorImages.forEach((img) => {
 
 window.getPopupContent = function (data, actorId, uniqueId = '') {
   const actorName = data["Nama"] || data["Nama Usaha"] || data["nama"] || "Aktor Tanpa Nama";
-  const photo = data["Foto Visual Path"] || '';
-  const notes = data["Notes"] || data["Catatan"] || data["catatan"] || '';
+  const photo = data["Foto Visual Path"] || data["foto"] || data["Foto"] || '';
+  const notes = data["Notes"] || data["Catatan"] || data["catatan"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.text) || '';
   const description = data["Deskripsi"] || data["deskripsi"] || '';
   const showTestBtn = (actorId === "aktorUsaha");
 
   const notesType = data["NotesType"] || data["notesType"] || '';
   const notesStart = data["NotesStartDate"] || data["notesStartDate"] || '';
   const notesEnd = data["NotesEndDate"] || data["notesEndDate"] || '';
-  const notesImg = data["NotesImage"] || data["notesImage"] || '';
+  const notesImg = data["NotesImage"] || data["notesImage"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.image) || '';
 
-  const activityName = data["NotesName"] || data["notesName"] || '';
+  const activityName = data["NotesName"] || data["notesName"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.name) || '';
 
   // Notes badge with larger icon and dynamic activity name
   let notesBadgeHtml = '';
