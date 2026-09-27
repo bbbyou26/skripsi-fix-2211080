@@ -63,6 +63,25 @@ def save_base64_image(b64_str, prefix="img"):
         return b64_str
 
 
+def clean_image_path(val):
+    """
+    Normalisasi path gambar:
+    1. Jika base64, simpan ke file dan dapatkan relative path (/static/uploads/...).
+    2. Jika URL absolut yang menunjuk ke domain lokal atau server (/static/uploads/...),
+       ubah menjadi relative path (/static/uploads/...).
+    """
+    if not val or not isinstance(val, str):
+        return val
+    val = val.strip()
+    if val.startswith("data:image/") or val.startswith("data:application/"):
+        return save_base64_image(val)
+    if val.startswith("http://") or val.startswith("https://"):
+        idx = val.find("/static/")
+        if idx != -1:
+            return val[idx:]
+    return val
+
+
 # ---------------------------------------------------------------
 # HELPER: Buat Embedding Teks (Semantic Search)
 # ---------------------------------------------------------------
@@ -396,11 +415,35 @@ def save_actor():
     lat        = data.get("lat")
     lng        = data.get("lng")
 
-    # Pastikan data foto dan gambar tersimpan konsisten di payload Neo4j
+    # Pastikan data foto dan gambar dibersihkan ke relative path dan tersimpan konsisten di payload Neo4j
+    if "Foto Visual Path" in data:
+        data["Foto Visual Path"] = clean_image_path(data["Foto Visual Path"])
+    if "foto" in data:
+        data["foto"] = clean_image_path(data["foto"])
+    if "NotesImage" in data:
+        data["NotesImage"] = clean_image_path(data["NotesImage"])
+    if "image" in data:
+        data["image"] = clean_image_path(data["image"])
+
     if "Foto Visual Path" in data and data["Foto Visual Path"]:
         data["foto"] = data["Foto Visual Path"]
     elif "foto" in data and data["foto"]:
         data["Foto Visual Path"] = data["foto"]
+
+    # Bersihkan image di dalam lokasiNotesList jika ada
+    if "lokasiNotesList" in data and isinstance(data["lokasiNotesList"], list):
+        for note in data["lokasiNotesList"]:
+            if isinstance(note, dict) and "image" in note:
+                note["image"] = clean_image_path(note["image"])
+
+    # Bersihkan image di dalam usahaActivityList jika ada
+    if "usahaActivityList" in data and isinstance(data["usahaActivityList"], list):
+        for act in data["usahaActivityList"]:
+            if isinstance(act, dict):
+                if "image" in act:
+                    act["image"] = clean_image_path(act["image"])
+                if "visual" in act:
+                    act["visual"] = clean_image_path(act["visual"])
 
     # Perbaiki lat/lng dari rawCoords jika bernilai 0 atau tidak valid (untuk poligon)
     if (not lat or not lng or lat == 0.0 or lng == 0.0) and "rawCoords" in data:
