@@ -944,20 +944,20 @@ window.getPopupContent = function (data, actorId, uniqueId = '') {
           <div class="lokasi-notes-grid-title" style="font-size: 10px; font-weight: 700; color: #64748b; margin-top: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Daftar Catatan (${lokasiNotesList.length}):</div>
           <div class="lokasi-notes-grid">
             ${lokasiNotesList.map((item, idx) => {
-              const isAct = idx === 0 ? 'active' : '';
-              if (item.image) {
-                return `<div class="lokasi-grid-item ${isAct}" onclick="window.selectLokasiSideNote(this, ${idx})" data-idx="${idx}" title="${item.name || 'Catatan'}"><img src="${item.image}" alt="${item.name || 'Catatan'}" /></div>`;
-              } else {
-                return `<div class="lokasi-grid-item no-img ${isAct}" onclick="window.selectLokasiSideNote(this, ${idx})" data-idx="${idx}" title="${item.name || 'Catatan'}"><img src="/static/image/icon/pin-map.svg" class="grid-placeholder-icon" /><span>${item.name || 'Catatan'}</span></div>`;
-              }
-            }).join('')}
+          const isAct = idx === 0 ? 'active' : '';
+          if (item.image) {
+            return `<div class="lokasi-grid-item ${isAct}" onclick="window.selectLokasiSideNote(this, ${idx})" data-idx="${idx}" title="${item.name || 'Catatan'}"><img src="${item.image}" alt="${item.name || 'Catatan'}" /></div>`;
+          } else {
+            return `<div class="lokasi-grid-item no-img ${isAct}" onclick="window.selectLokasiSideNote(this, ${idx})" data-idx="${idx}" title="${item.name || 'Catatan'}"><img src="/static/image/icon/pin-map.svg" class="grid-placeholder-icon" /><span>${item.name || 'Catatan'}</span></div>`;
+          }
+        }).join('')}
           </div>
         `;
       }
 
       const encodedData = JSON.stringify(lokasiNotesList.length > 0 ? lokasiNotesList : [activeNote]).replace(/'/g, "&#39;");
 
-       notesHtml = `
+      notesHtml = `
         ${attachedBtnHtml}
         <div class="actor-notes-side-card" onclick="event.stopPropagation()" data-notes='${encodedData}'>
            <div class="notes-side-header">
@@ -1151,7 +1151,7 @@ window.selectLokasiSideNote = function (el, index) {
       if (imgVal) {
         if (img) img.src = imgVal;
         imgWrap.style.display = 'block';
-        imgWrap.onclick = function(e) {
+        imgWrap.onclick = function (e) {
           e.stopPropagation();
           if (typeof window.openPhotoModal === 'function') {
             window.openPhotoModal(imgVal);
@@ -1616,27 +1616,26 @@ window.openEditOverlay = function (type, uniqueId = '') {
           if (userNotesSection) userNotesSection.style.display = "block";
           if (editTitle) editTitle.innerText = "Edit Catatan Lokasi";
 
-          // Hydrate User Notes fields
+          // Hydrate User Notes fields khusus untuk catatan milik user yang sedang login
           const data = window.editingMarker.actorData || {};
-          const userNoteName = data["NotesName"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.name) || '';
-          const userNoteText = data["Notes"] || data["Catatan"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.text) || '';
-          const userNoteImg = data["NotesImage"] || (data["lokasiNotesList"] && data["lokasiNotesList"][0]?.image) || '';
+          const list = window.getLokasiNotesList(data);
+          const myNote = list.find(item => item.createdBy && item.createdBy === window.currentUser) || {};
 
           const notesNameUser = document.getElementById("inputLokasiNotesNameUser");
           if (notesNameUser) {
-            notesNameUser.value = userNoteName;
+            notesNameUser.value = myNote.name || '';
           }
 
           const notesTextUser = document.getElementById("inputLokasiNotesTextUser");
           if (notesTextUser) {
-            notesTextUser.value = userNoteText;
+            notesTextUser.value = myNote.text || '';
           }
 
           const previewUserDiv = document.getElementById("previewLokasiNotesUser");
           const previewUserImg = previewUserDiv?.querySelector("img");
           if (previewUserDiv && previewUserImg) {
-            if (userNoteImg) {
-              previewUserImg.src = userNoteImg;
+            if (myNote.image) {
+              previewUserImg.src = myNote.image;
               previewUserDiv.style.display = "block";
             } else {
               previewUserImg.src = "";
@@ -2037,18 +2036,22 @@ document.addEventListener('click', (e) => {
           else delete actorData["NotesImage"];
 
           let list = window.getLokasiNotesList(actorData);
-          if (list.length === 0) {
+          const existingIdx = list.findIndex(item => item.createdBy && item.createdBy === window.currentUser);
+
+          if (existingIdx !== -1) {
+            list[existingIdx].name = notesNameUser || "Catatan Lokasi";
+            list[existingIdx].text = notesTextUser;
+            list[existingIdx].image = notesImgUser;
+            list[existingIdx].date = new Date().toLocaleString();
+          } else {
             list.push({
               id: "note_" + Date.now(),
               name: notesNameUser || "Catatan Lokasi",
               text: notesTextUser,
               image: notesImgUser,
+              createdBy: window.currentUser,
               date: new Date().toLocaleString()
             });
-          } else {
-            list[0].name = notesNameUser || "Catatan Lokasi";
-            list[0].text = notesTextUser;
-            list[0].image = notesImgUser;
           }
           actorData["lokasiNotesList"] = list;
           actorData["NotesList"] = list;
